@@ -8,7 +8,7 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "btrenv",
+	Use:   "bnv",
 	Short: "better-env: secuure global env var manager",
 	Long:  "Better-env securely stores env vars globally and loads them without plaintext on disk.",
 }
