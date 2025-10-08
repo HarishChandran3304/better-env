@@ -15,6 +15,7 @@ import (
 	"github.com/ProtonMail/go-crypto/openpgp/armor"
 	"github.com/ProtonMail/go-crypto/openpgp/packet"
 	"github.com/spf13/cobra"
+	"golang.org/x/term"
 )
 
 const (
@@ -286,7 +287,15 @@ func (s *SetupCommand) readLine() string {
 }
 
 func (s *SetupCommand) readPassword() string {
-	// Note: In production, use a proper library like golang.org/x/term for hidden input
+	// Hidden input for passphrase
+	// Fallback to visible input if stdin is not a terminal
+	if fd := int(os.Stdin.Fd()); term.IsTerminal(fd) {
+		b, err := term.ReadPassword(fd)
+		fmt.Println()
+		if err == nil {
+			return strings.TrimSpace(string(b))
+		}
+	}
 	return s.readLine()
 }
 
