@@ -9,8 +9,8 @@ import (
 
 var rootCmd = &cobra.Command{
 	Use:   "bnv",
-	Short: "better-env: secuure global env var manager",
-	Long:  "Better-env securely stores env vars globally and loads them without plaintext on disk.",
+	Short: "better-env: encrypted secrets, zero plaintext, instant runtime loading.",
+	Long:  "Better-env: a global, GPG-encrypted store for your environment variables. Load them directly at runtime — never touch plaintext again.",
 }
 
 func Execute() {
@@ -18,4 +18,10 @@ func Execute() {
 		fmt.Print(err)
 		os.Exit(1)
 	}
+}
+
+func init() {
+	// wire subcommands here
+	rootCmd.AddCommand(setupCmd)
+	rootCmd.AddCommand(initCmd)
 }
