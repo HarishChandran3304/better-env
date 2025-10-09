@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -14,14 +15,17 @@ var (
 	initForce bool
 )
 
-const defaultConfig = ``
+type ProjectConfig struct {
+	StorePath string   `json:"store_path"`
+	Keys      []string `json:"keys,omitempty"` // Optional: specific keys this project uses
+}
 
 var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Create a .better-env file in the current project",
+	Long:  "Initialize better-env for this project by creating a .better-env configuration file that links to your global encrypted store.",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		dir := "."
-
 		if initPath != "" {
 			dir = initPath
 		}
@@ -36,11 +40,39 @@ var initCmd = &cobra.Command{
 			return fmt.Errorf("%s already exists (use --force to overwrite)", target)
 		}
 
-		if err := os.WriteFile(target, []byte(defaultConfig), 0o644); err != nil {
+		// Get the global store path
+		storePath, err := getStorePath()
+		if err != nil {
+			return fmt.Errorf("failed to determine store path: %w", err)
+		}
+
+		// Verify that setup has been run
+		configPath := filepath.Join(storePath, ConfigFileName)
+		if _, err := os.Stat(configPath); os.IsNotExist(err) {
+			return fmt.Errorf("better-env is not configured. Run 'bnv setup' first")
+		}
+
+		// Create project config
+		projectConfig := ProjectConfig{
+			StorePath: storePath,
+			Keys:      []string{}, // Empty initially, user can add specific keys later
+		}
+
+		configData, err := json.MarshalIndent(projectConfig, "", "  ")
+		if err != nil {
+			return fmt.Errorf("failed to create config: %w", err)
+		}
+
+		if err := os.WriteFile(target, configData, 0o644); err != nil {
 			return fmt.Errorf("write %s: %w", target, err)
 		}
 
-		fmt.Println("Created empty .better-env file.")
+		fmt.Println("✅ Created .better-env configuration file.")
+		fmt.Printf("📁 Linked to store: %s\n", storePath)
+		fmt.Println()
+		fmt.Println("Next steps:")
+		fmt.Println("  1. Add secrets to your store: bnv set KEY VALUE")
+		fmt.Println("  2. Load secrets in this project: bnv launch")
 		return nil
 	},
 }
