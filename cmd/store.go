@@ -13,19 +13,19 @@ import (
 	"golang.org/x/term"
 )
 
-type SetCommand struct {
+type StoreCommand struct {
 	key   string
 	value string
 }
 
-func NewSetCommand(key, value string) *SetCommand {
-	return &SetCommand{
+func NewStoreCommand(key, value string) *StoreCommand {
+	return &StoreCommand{
 		key:   key,
 		value: value,
 	}
 }
 
-func (s *SetCommand) Run() error {
+func (s *StoreCommand) Run() error {
 	// 1. Get store path and load config
 	storePath, err := getStorePath()
 	if err != nil {
@@ -119,7 +119,7 @@ func (s *SetCommand) Run() error {
 		return fmt.Errorf("failed to write secrets file: %w", err)
 	}
 
-	fmt.Printf("✅ Secret '%s' has been set successfully!\n", s.key)
+	fmt.Printf("✅ Secret '%s' has been stored successfully!\n", s.key)
 	return nil
 }
 
@@ -138,12 +138,21 @@ func readPassword() ([]byte, error) {
 
 var (
 	storeCmd = &cobra.Command{
-		Use:   "set KEY VALUE",
-		Short: "Set a secret key-value pair",
-		Long:  "Add or update a secret in the encrypted store. You will be prompted for your passphrase.",
-		Args:  cobra.ExactArgs(2),
+		Use:   "store KEY",
+		Short: "Store an encrypted secret key-value pair in the global store",
+		Long:  "Add or update a secret in the encrypted global store. The value will be read interactively. You will be prompted for your passphrase.",
+		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			sc := NewSetCommand(args[0], args[1])
+			// Prompt for value
+			fmt.Print("Enter value: ")
+			reader := bufio.NewReader(os.Stdin)
+			value, err := reader.ReadString('\n')
+			if err != nil {
+				return fmt.Errorf("failed to read value: %w", err)
+			}
+			value = strings.TrimSpace(value)
+
+			sc := NewStoreCommand(args[0], value)
 			return sc.Run()
 		},
 	}
