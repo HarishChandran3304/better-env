@@ -2,8 +2,6 @@ package cmd
 
 import (
 	"bufio"
-	"bytes"
-	"crypto"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -11,9 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ProtonMail/go-crypto/openpgp"
-	"github.com/ProtonMail/go-crypto/openpgp/armor"
-	"github.com/ProtonMail/go-crypto/openpgp/packet"
+	"github.com/ProtonMail/gopenpgp/v3/crypto"
+	"github.com/ProtonMail/gopenpgp/v3/profile"
 	"github.com/spf13/cobra"
 	"golang.org/x/term"
 )
@@ -23,11 +20,11 @@ const (
 	SecretsFileName = "secrets.gpg"
 )
 
-const Banner = `
-    __         __  __                                 
-   / /_  ___  / /_/ /____  _____            ___  ____ _   __
-  / __ \/ _ \/ __/ __/ _ \/ ___/  ______   / _ \/ __ \ | / /
- / /_/ /  __/ /_/ /_/  __/ /     /_____/  /  __/ / / / |/ / 
+const Banner = `  
+    __         __  __                                   
+   / /_  ___  / /_/ /____  _____            ___  ____ _   __  
+  / __ \/ _ \/ __/ __/ _ \/ ___/  ______   / _ \/ __ \ | / /  
+ / /_/ /  __/ /_/ /_/  __/ /     /_____/  /  __/ / / / |/ /   
 /_.___/\___/\__/\__/\___/_/               \___/_/ /_/|___/`
 
 type Config struct {
@@ -79,7 +76,7 @@ func (s *SetupCommand) Run() error {
 	fmt.Println("🚀 better-env Setup")
 
 	// Step 1: GPG Key Generation
-	entity, err := s.handleKeySetup()
+	key, err := s.handleKeySetup()
 	if err != nil {
 		return fmt.Errorf("key setup failed: %w", err)
 	}
@@ -87,7 +84,7 @@ func (s *SetupCommand) Run() error {
 	// Step 2: Save configuration
 	config := Config{
 		StorePath:      storePath,
-		KeyFingerprint: fmt.Sprintf("%X", entity.PrimaryKey.Fingerprint),
+		KeyFingerprint: key.GetFingerprint(),
 		CreatedAt:      time.Now(),
 		UpdatedAt:      time.Now(),
 	}
@@ -97,12 +94,12 @@ func (s *SetupCommand) Run() error {
 	}
 
 	// Step 3: Save the key pair
-	if err := s.saveKeyPair(storePath, entity); err != nil {
+	if err := s.saveKeyPair(storePath, key); err != nil {
 		return fmt.Errorf("failed to save key pair: %w", err)
 	}
 
 	// Step 4: Initialize empty secrets file
-	if err := s.initializeSecretsFile(storePath, entity); err != nil {
+	if err := s.initializeSecretsFile(storePath, key); err != nil {
 		return fmt.Errorf("failed to initialize secrets file: %w", err)
 	}
 
@@ -113,16 +110,11 @@ func (s *SetupCommand) Run() error {
 	fmt.Println()
 	fmt.Println("Next steps:")
 	fmt.Println("  1. Enter this command to start using better-env:")
-	// TODO: Add a command to set the alias and prompt the user to run it
-	// We need an appropriate command they can run to set the alias for eval-ing the launch command
-	// Something like: echo "alias bnv launch='eval \"$(bnv launch)\"'" >> ~/.bashrc and source ~/.bashrc
-	// Basically since we cant set env vars to parent processes, we will output each key value pair in the form of EXPORT KEY=VALUE and the eval will set it for us
 	fmt.Println("  2. Navigate to your project: cd my/project")
 	fmt.Println("  3. Initialize better-env: bnv init")
 	fmt.Println("  4. Add secrets: bnv set KEY VALUE")
 	fmt.Println("  5. Load secrets: bnv launch")
 	fmt.Println()
-	// TODO: Add a link to the docs
 	fmt.Println("Check out the docs at https://github.com/HarishChandran3304/better-env for more information!")
 
 	return nil
@@ -130,25 +122,20 @@ func (s *SetupCommand) Run() error {
 
 // getStorePath returns the fixed store path for better-env
 func getStorePath() (string, error) {
-	// Use os.UserConfigDir() which handles cross-platform config directories
-	// Linux/Unix: ~/.config
-	// macOS: ~/Library/Application Support (but also supports ~/.config)
-	// Windows: %APPDATA%
 	configDir, err := os.UserConfigDir()
 	if err != nil {
 		return "", err
 	}
-
 	return filepath.Join(configDir, "better-env"), nil
 }
 
-func (s *SetupCommand) handleKeySetup() (*openpgp.Entity, error) {
+func (s *SetupCommand) handleKeySetup() (*crypto.Key, error) {
 	fmt.Println()
 	fmt.Println("🔑 First, let's set up a new GPG key for you.")
 	return s.generateNewKey()
 }
 
-func (s *SetupCommand) generateNewKey() (*openpgp.Entity, error) {
+func (s *SetupCommand) generateNewKey() (*crypto.Key, error) {
 	fmt.Print("Enter your name: ")
 	name := s.readLine()
 	if name == "" {
@@ -165,30 +152,26 @@ func (s *SetupCommand) generateNewKey() (*openpgp.Entity, error) {
 	passphrase := s.readPassword()
 	s.passphrase = passphrase
 
-	config := &packet.Config{
-		DefaultHash:            crypto.SHA256,
-		DefaultCipher:          packet.CipherAES256,
-		DefaultCompressionAlgo: packet.CompressionZLIB,
-		RSABits:                2048,
-	}
+	// Use GopenPGP's key generation with default profile (Curve25519)
+	pgp := crypto.PGPWithProfile(profile.Default())
+	keyGenHandle := pgp.KeyGeneration().
+		AddUserId(name, email).
+		New()
 
-	entity, err := openpgp.NewEntity(name, "", email, config)
+	key, err := keyGenHandle.GenerateKey()
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate key: %w", err)
 	}
 
-	// Note: self-signatures may be created lazily during serialization. We'll
-	// handle potential re-signing safely inside saveKeyPair by temporarily
-	// decrypting the key if needed.
-
-	// Encrypt private key with passphrase if provided
+	// Lock the key with passphrase if provided
 	if passphrase != "" {
-		if err := entity.PrivateKey.Encrypt([]byte(passphrase)); err != nil {
+		key, err = pgp.LockKey(key, []byte(passphrase))
+		if err != nil {
 			return nil, fmt.Errorf("failed to encrypt private key: %w", err)
 		}
 	}
 
-	return entity, nil
+	return key, nil
 }
 
 func (s *SetupCommand) saveConfig(storePath string, config Config) error {
@@ -197,66 +180,34 @@ func (s *SetupCommand) saveConfig(storePath string, config Config) error {
 	if err != nil {
 		return err
 	}
-
 	return os.WriteFile(configPath, data, 0600)
 }
 
-func (s *SetupCommand) saveKeyPair(storePath string, entity *openpgp.Entity) error {
+func (s *SetupCommand) saveKeyPair(storePath string, key *crypto.Key) error {
 	// Save private key
 	privateKeyPath := filepath.Join(storePath, "private.key")
-	privateKeyFile, err := os.OpenFile(privateKeyPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
+	armoredPrivate, err := key.Armor()
 	if err != nil {
 		return err
 	}
-	defer privateKeyFile.Close()
-
-	w, err := armor.Encode(privateKeyFile, openpgp.PrivateKeyType, nil)
-	if err != nil {
+	if err := os.WriteFile(privateKeyPath, []byte(armoredPrivate), 0600); err != nil {
 		return err
 	}
-
-	// Some library versions require a non-nil signer available for creating
-	// self-signatures during private key serialization. If the key is encrypted,
-	// temporarily decrypt using the passphrase we just collected.
-	var serializeErr error
-	if entity.PrivateKey != nil && entity.PrivateKey.Encrypted && s.passphrase != "" {
-		if err := entity.PrivateKey.Decrypt([]byte(s.passphrase)); err == nil {
-			serializeErr = entity.SerializePrivate(w, nil)
-			// Re-encrypt the private key after serialization
-			_ = entity.PrivateKey.Encrypt([]byte(s.passphrase))
-		} else {
-			serializeErr = entity.SerializePrivate(w, nil)
-		}
-	} else {
-		serializeErr = entity.SerializePrivate(w, nil)
-	}
-	if serializeErr != nil {
-		return serializeErr
-	}
-	w.Close()
 
 	// Save public key
 	publicKeyPath := filepath.Join(storePath, "public.key")
-	publicKeyFile, err := os.OpenFile(publicKeyPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+	publicKey, err := key.ToPublic()
 	if err != nil {
 		return err
 	}
-	defer publicKeyFile.Close()
-
-	w, err = armor.Encode(publicKeyFile, openpgp.PublicKeyType, nil)
+	armoredPublic, err := publicKey.Armor()
 	if err != nil {
 		return err
 	}
-
-	if err := entity.Serialize(w); err != nil {
-		return err
-	}
-	w.Close()
-
-	return nil
+	return os.WriteFile(publicKeyPath, []byte(armoredPublic), 0644)
 }
 
-func (s *SetupCommand) initializeSecretsFile(storePath string, entity *openpgp.Entity) error {
+func (s *SetupCommand) initializeSecretsFile(storePath string, key *crypto.Key) error {
 	secretsPath := filepath.Join(storePath, SecretsFileName)
 
 	// Create empty secrets map
@@ -266,19 +217,25 @@ func (s *SetupCommand) initializeSecretsFile(storePath string, entity *openpgp.E
 		return err
 	}
 
-	// Encrypt it
-	buf := new(bytes.Buffer)
-	w, err := openpgp.Encrypt(buf, []*openpgp.Entity{entity}, nil, nil, nil)
+	// Get public key for encryption
+	publicKey, err := key.ToPublic()
 	if err != nil {
 		return err
 	}
 
-	if _, err := w.Write(data); err != nil {
+	// Encrypt using GopenPGP
+	pgp := crypto.PGP()
+	encHandle, err := pgp.Encryption().Recipient(publicKey).New()
+	if err != nil {
 		return err
 	}
-	w.Close()
 
-	return os.WriteFile(secretsPath, buf.Bytes(), 0600)
+	pgpMessage, err := encHandle.Encrypt(data)
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile(secretsPath, pgpMessage.Bytes(), 0600)
 }
 
 func (s *SetupCommand) readLine() string {
@@ -287,8 +244,6 @@ func (s *SetupCommand) readLine() string {
 }
 
 func (s *SetupCommand) readPassword() string {
-	// Hidden input for passphrase
-	// Fallback to visible input if stdin is not a terminal
 	if fd := int(os.Stdin.Fd()); term.IsTerminal(fd) {
 		b, err := term.ReadPassword(fd)
 		fmt.Println()
