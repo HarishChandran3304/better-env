@@ -24,5 +24,5 @@ func init() {
 	// wire subcommands here
 	rootCmd.AddCommand(setupCmd)
 	rootCmd.AddCommand(initCmd)
-	rootCmd.AddCommand(setCmd)
+	rootCmd.AddCommand(storeCmd)
 }

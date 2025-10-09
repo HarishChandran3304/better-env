@@ -13,19 +13,19 @@ import (
 	"golang.org/x/term"
 )
 
-type StoreCommand struct {
+type SetCommand struct {
 	key   string
 	value string
 }
 
-func NewStoreCommand(key, value string) *StoreCommand {
-	return &StoreCommand{
+func NewSetCommand(key, value string) *SetCommand {
+	return &SetCommand{
 		key:   key,
 		value: value,
 	}
 }
 
-func (s *StoreCommand) Run() error {
+func (s *SetCommand) Run() error {
 	// 1. Get store path and load config
 	storePath, err := getStorePath()
 	if err != nil {
@@ -119,7 +119,7 @@ func (s *StoreCommand) Run() error {
 		return fmt.Errorf("failed to write secrets file: %w", err)
 	}
 
-	fmt.Printf("✅ Secret '%s' has been stored successfully!\n", s.key)
+	fmt.Printf("✅ Secret '%s' has been set successfully!\n", s.key)
 	return nil
 }
 
@@ -137,13 +137,13 @@ func readPassword() ([]byte, error) {
 }
 
 var (
-	setCmd = &cobra.Command{
-		Use:   "store KEY VALUE",
-		Short: "Store a secret key-value pair",
+	storeCmd = &cobra.Command{
+		Use:   "set KEY VALUE",
+		Short: "Set a secret key-value pair",
 		Long:  "Add or update a secret in the encrypted store. You will be prompted for your passphrase.",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			sc := NewStoreCommand(args[0], args[1])
+			sc := NewSetCommand(args[0], args[1])
 			return sc.Run()
 		},
 	}
