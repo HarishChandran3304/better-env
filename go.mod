@@ -4,6 +4,7 @@ go 1.24.2
 
 require (
 	github.com/ProtonMail/gopenpgp/v3 v3.3.0
+	github.com/atotto/clipboard v0.1.4
 	github.com/spf13/cobra v1.9.1
 	golang.org/x/term v0.29.0
 )
