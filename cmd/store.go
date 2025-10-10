@@ -119,7 +119,7 @@ func (s *StoreCommand) Run() error {
 		return fmt.Errorf("failed to write secrets file: %w", err)
 	}
 
-	fmt.Printf("✅ Secret '%s' has been stored successfully!\n", s.key)
+	fmt.Printf("Stored '%s'\n", s.key)
 	return nil
 }
 
