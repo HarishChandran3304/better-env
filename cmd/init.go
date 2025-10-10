@@ -16,8 +16,7 @@ var (
 )
 
 type ProjectConfig struct {
-	StorePath string   `json:"store_path"`
-	Keys      []string `json:"keys,omitempty"` // Optional: specific keys this project uses
+	Keys []string `json:"keys,omitempty"` // Optional: specific keys this project uses
 }
 
 var initCmd = &cobra.Command{
@@ -52,10 +51,9 @@ var initCmd = &cobra.Command{
 			return fmt.Errorf("better-env is not configured. Run 'bnv setup' first")
 		}
 
-		// Create project config
+		// Create project config (no store path; commit-friendly)
 		projectConfig := ProjectConfig{
-			StorePath: storePath,
-			Keys:      []string{}, // Empty initially, user can add specific keys later
+			Keys: []string{}, // Empty initially, user can add specific keys later
 		}
 
 		configData, err := json.MarshalIndent(projectConfig, "", "  ")

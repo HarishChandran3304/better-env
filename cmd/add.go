@@ -39,7 +39,10 @@ func (a *AddCommand) Run() error {
 	}
 
 	// 3. Verify the global store exists and has these keys
-	storePath := projectConfig.StorePath
+	storePath, err := getStorePath()
+	if err != nil {
+		return fmt.Errorf("failed to determine store path: %w", err)
+	}
 	secretsPath := filepath.Join(storePath, SecretsFileName)
 
 	if _, err := os.Stat(secretsPath); os.IsNotExist(err) {

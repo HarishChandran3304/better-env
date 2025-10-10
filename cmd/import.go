@@ -250,11 +250,6 @@ func (i *ImportCommand) promptCleanup(envVars map[string]string) error {
 }
 
 func (i *ImportCommand) createBetterEnvFile(envVars map[string]string) error {
-	// Get store path for the config
-	storePath, err := getStorePath()
-	if err != nil {
-		return err
-	}
 
 	// Extract keys from envVars
 	keys := make([]string, 0, len(envVars))
@@ -262,10 +257,9 @@ func (i *ImportCommand) createBetterEnvFile(envVars map[string]string) error {
 		keys = append(keys, key)
 	}
 
-	// Create ProjectConfig
+	// Create ProjectConfig (no store path; commit-friendly)
 	projectConfig := ProjectConfig{
-		StorePath: storePath,
-		Keys:      keys,
+		Keys: keys,
 	}
 
 	// Marshal to JSON

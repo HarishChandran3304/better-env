@@ -42,8 +42,11 @@ func (r *RunCommand) Run() error {
 		return fmt.Errorf("failed to parse .better-env: %w", err)
 	}
 
-	// 2. Load private key
-	storePath := projectConfig.StorePath
+	// 2. Load private key (use default global store path)
+	storePath, err := getStorePath()
+	if err != nil {
+		return fmt.Errorf("failed to determine store path: %w", err)
+	}
 	privateKeyPath := filepath.Join(storePath, "private.key")
 	privateKeyArmored, err := os.ReadFile(privateKeyPath)
 	if err != nil {

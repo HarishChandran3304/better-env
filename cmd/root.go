@@ -15,8 +15,8 @@ var rootCmd = &cobra.Command{
 	Long:  "better-env: a global, GPG-encrypted store for your environment variables. Load them directly at runtime — never touch plaintext again.",
 }
 
-// version is set at build time with -ldflags "-X 'github.com/HarishChandran3304/better-env/cmd.version=vX.Y.Z'"
-var version = "dev"
+// Hardcoded CLI version. Update this value for each release.
+const Version = "0.1.1"
 
 func Execute() {
 	// Silence Cobra's default usage and error prints; we handle output ourselves
@@ -41,6 +41,6 @@ func Execute() {
 
 func init() {
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
-	rootCmd.Version = version
-	rootCmd.SetVersionTemplate("bnv version {{.Version}}\n")
+	rootCmd.Version = Version
+	rootCmd.SetVersionTemplate("better-env {{.Version}}\n")
 }
