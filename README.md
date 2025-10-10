@@ -245,14 +245,14 @@ Notes for teams
 Roadmap
 -------
 
-- Backup/restore helpers for the encrypted store [ ]
-- Optional multi-profile/namespaces per project [ ]
-- Key rotation and audit logging helpers [ ]
-- Publish prebuilt binaries and a Homebrew formula [ ]
-- Versioning for the global store? [ ]
-- Password caching (with apt TTL)? [ ]
-- Improve support for Windows [ ]
-- Improve support for team-based collaboration and workflows [ ]
+- [ ] Backup/restore helpers for the encrypted store
+- [ ] Optional multi-profile/namespaces per project
+- [ ] Key rotation and audit logging helpers
+- [ ] Publish prebuilt binaries and a Homebrew formula
+- [ ] Versioning for the global store?
+- [ ] Password caching (with apt TTL)?
+- [ ] Improve support for Windows
+- [ ] Improve support for team-based collaboration and workflows
 
 
 Windows Support
