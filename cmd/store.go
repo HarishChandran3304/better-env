@@ -8,9 +8,9 @@ import (
 	"path/filepath"
 	"strings"
 
+	beinternal "github.com/HarishChandran3304/better-env/internal"
 	"github.com/ProtonMail/gopenpgp/v3/crypto"
 	"github.com/spf13/cobra"
-	"golang.org/x/term"
 )
 
 type StoreCommand struct {
@@ -44,14 +44,8 @@ func (s *StoreCommand) Run() error {
 		return fmt.Errorf("failed to read private key: %w", err)
 	}
 
-	// 3. Prompt for passphrase
-	fmt.Print("Enter passphrase: ")
-	passphrase, err := readPassword()
-	if err != nil {
-		return fmt.Errorf("failed to read passphrase: %w", err)
-	}
-
-	privateKey, err := crypto.NewPrivateKeyFromArmored(string(privateKeyArmored), passphrase)
+	// 3. Prompt for passphrase and unlock (3 attempts)
+	privateKey, err := beinternal.PromptAndUnlockPrivateKey(privateKeyArmored, false, 3)
 	if err != nil {
 		return fmt.Errorf("failed to unlock private key: %w", err)
 	}
@@ -123,18 +117,7 @@ func (s *StoreCommand) Run() error {
 	return nil
 }
 
-// Helper function to read password (reuse from setup)
-func readPassword() ([]byte, error) {
-	if fd := int(os.Stdin.Fd()); term.IsTerminal(fd) {
-		b, err := term.ReadPassword(fd)
-		fmt.Println()
-		return b, err
-	}
-	// Fallback for non-terminal
-	reader := bufio.NewReader(os.Stdin)
-	line, err := reader.ReadString('\n')
-	return []byte(strings.TrimSpace(line)), err
-}
+// removed readPassword; centralized in internal helper
 
 var (
 	storeCmd = &cobra.Command{

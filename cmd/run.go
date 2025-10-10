@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 
+	beinternal "github.com/HarishChandran3304/better-env/internal"
 	"github.com/ProtonMail/gopenpgp/v3/crypto"
 	"github.com/spf13/cobra"
 )
@@ -53,14 +54,8 @@ func (r *RunCommand) Run() error {
 		return fmt.Errorf("failed to read private key: %w", err)
 	}
 
-	// 3. Prompt for passphrase
-	fmt.Fprint(os.Stderr, "Enter passphrase: ")
-	passphrase, err := readPassword()
-	if err != nil {
-		return fmt.Errorf("failed to read passphrase: %w", err)
-	}
-
-	privateKey, err := crypto.NewPrivateKeyFromArmored(string(privateKeyArmored), passphrase)
+	// 3. Prompt for passphrase and unlock (3 attempts)
+	privateKey, err := beinternal.PromptAndUnlockPrivateKey(privateKeyArmored, true, 3)
 	if err != nil {
 		return fmt.Errorf("failed to unlock private key: %w", err)
 	}
