@@ -114,3 +114,7 @@ var removeCmd = &cobra.Command{
 		return rc.Run()
 	},
 }
+
+func init() {
+	rootCmd.AddCommand(removeCmd)
+}

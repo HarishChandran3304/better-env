@@ -10,8 +10,11 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "bnv",
 	Short: "better-env: encrypted secrets, zero plaintext, instant runtime loading.",
-	Long:  "Better-env: a global, GPG-encrypted store for your environment variables. Load them directly at runtime — never touch plaintext again.",
+	Long:  "better-env: a global, GPG-encrypted store for your environment variables. Load them directly at runtime — never touch plaintext again.",
 }
+
+// version is set at build time with -ldflags "-X 'github.com/HarishChandran3304/better-env/cmd.version=vX.Y.Z'"
+var version = "dev"
 
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
@@ -21,20 +24,7 @@ func Execute() {
 }
 
 func init() {
-	// wire subcommands here
-	rootCmd.AddCommand(setupCmd)
-	rootCmd.AddCommand(initCmd)
-	rootCmd.AddCommand(storeCmd)
-	rootCmd.AddCommand(addCmd)
-	rootCmd.AddCommand(showCmd)
-	rootCmd.AddCommand(copyCmd)
-	rootCmd.AddCommand(loadCmd)
-	rootCmd.AddCommand(unloadCmd)
-	rootCmd.AddCommand(runCmd)
-	rootCmd.AddCommand(importCmd)
-	rootCmd.AddCommand(listCmd)
-	rootCmd.AddCommand(removeCmd)
-	rootCmd.AddCommand(deleteCmd)
-	rootCmd.AddCommand(updateCmd)
-	rootCmd.AddCommand(renameCmd)
+	rootCmd.CompletionOptions.DisableDefaultCmd = true
+	rootCmd.Version = version
+	rootCmd.SetVersionTemplate("bnv version {{.Version}}\n")
 }

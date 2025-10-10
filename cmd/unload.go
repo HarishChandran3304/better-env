@@ -102,3 +102,7 @@ var unloadCmd = &cobra.Command{
 		return uc.Run()
 	},
 }
+
+func init() {
+	rootCmd.AddCommand(unloadCmd)
+}

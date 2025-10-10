@@ -144,3 +144,7 @@ var updateCmd = &cobra.Command{
 		return uc.Run()
 	},
 }
+
+func init() {
+	rootCmd.AddCommand(updateCmd)
+}

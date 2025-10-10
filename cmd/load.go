@@ -118,5 +118,9 @@ var loadCmd = &cobra.Command{
 	},
 }
 
+func init() {
+	rootCmd.AddCommand(loadCmd)
+}
+
 // TODO: Remember to prompt the user to run the following command for this to be able to work:
 // TODO: "echo 'bnv() { if [ \"$1\" = \"load\" ]; then eval \"$(command bnv load)\"; else command bnv \"$@\"; fi }' >> ~/.zshrc && source ~/.zshrc"

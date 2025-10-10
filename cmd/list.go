@@ -151,4 +151,5 @@ var listCmd = &cobra.Command{
 
 func init() {
 	listCmd.Flags().BoolP("all", "a", false, "List all keys from global store")
+	rootCmd.AddCommand(listCmd)
 }

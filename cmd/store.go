@@ -157,3 +157,7 @@ var (
 		},
 	}
 )
+
+func init() {
+	rootCmd.AddCommand(storeCmd)
+}

@@ -157,3 +157,7 @@ var deleteCmd = &cobra.Command{
 		return dc.Run()
 	},
 }
+
+func init() {
+	rootCmd.AddCommand(deleteCmd)
+}

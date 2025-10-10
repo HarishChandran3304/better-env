@@ -122,3 +122,7 @@ var copyCmd = &cobra.Command{
 		return cc.Run()
 	},
 }
+
+func init() {
+	rootCmd.AddCommand(copyCmd)
+}

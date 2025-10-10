@@ -210,3 +210,7 @@ var renameCmd = &cobra.Command{
 		return rc.Run()
 	},
 }
+
+func init() {
+	rootCmd.AddCommand(renameCmd)
+}

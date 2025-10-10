@@ -104,3 +104,7 @@ var showCmd = &cobra.Command{
 		return sc.Run()
 	},
 }
+
+func init() {
+	rootCmd.AddCommand(showCmd)
+}

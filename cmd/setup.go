@@ -273,3 +273,7 @@ var (
 		},
 	}
 )
+
+func init() {
+	rootCmd.AddCommand(setupCmd)
+}

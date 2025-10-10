@@ -136,3 +136,7 @@ var runCmd = &cobra.Command{
 		return rc.Run()
 	},
 }
+
+func init() {
+	rootCmd.AddCommand(runCmd)
+}

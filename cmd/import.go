@@ -297,3 +297,7 @@ var importCmd = &cobra.Command{
 		return ic.Run()
 	},
 }
+
+func init() {
+	rootCmd.AddCommand(importCmd)
+}
