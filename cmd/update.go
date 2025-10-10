@@ -130,7 +130,7 @@ func (u *UpdateCommand) Run() error {
 		return fmt.Errorf("failed to write secrets file: %w", err)
 	}
 
-	fmt.Printf("✅ Secret '%s' has been updated successfully!\n", u.key)
+	fmt.Printf("Updated '%s'\n", u.key)
 	return nil
 }
 
