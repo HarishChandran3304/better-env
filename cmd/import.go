@@ -111,10 +111,10 @@ func (i *ImportCommand) Run() error {
 	}
 
 	if len(conflicts) > 0 {
-		fmt.Printf("⚠️  Warning: The following keys already exist and will be overwritten: %v\n", conflicts)
+		fmt.Printf("Warning: The following keys already exist and will be overwritten: %v\n", conflicts)
 	}
 	if len(newKeys) > 0 {
-		fmt.Printf("✅ Adding %d new keys: %v\n", len(newKeys), newKeys)
+		fmt.Printf("Adding %d new keys: %v\n", len(newKeys), newKeys)
 	}
 
 	// 8. Re-encrypt with public key
@@ -152,7 +152,7 @@ func (i *ImportCommand) Run() error {
 		return fmt.Errorf("failed to write secrets file: %w", err)
 	}
 
-	fmt.Printf("✅ Successfully imported %d environment variables!\n", len(envVars))
+	fmt.Printf("Imported %d environment variables\n", len(envVars))
 
 	// 10. Cleanup prompts
 	if err := i.promptCleanup(envVars); err != nil {
@@ -185,7 +185,7 @@ func (i *ImportCommand) parseEnvFile() (map[string]string, error) {
 		// Parse KEY=VALUE format
 		parts := strings.SplitN(line, "=", 2)
 		if len(parts) != 2 {
-			fmt.Fprintf(os.Stderr, "⚠️  Warning: Skipping invalid line %d: %s\n", lineNum, line)
+			fmt.Fprintf(os.Stderr, "Warning: Skipping invalid line %d: %s\n", lineNum, line)
 			continue
 		}
 
@@ -196,7 +196,7 @@ func (i *ImportCommand) parseEnvFile() (map[string]string, error) {
 		value = strings.Trim(value, "\"'")
 
 		if key == "" {
-			fmt.Fprintf(os.Stderr, "⚠️  Warning: Skipping line %d with empty key\n", lineNum)
+			fmt.Fprintf(os.Stderr, "Warning: Skipping line %d with empty key\n", lineNum)
 			continue
 		}
 
@@ -224,9 +224,9 @@ func (i *ImportCommand) promptCleanup(envVars map[string]string) error {
 		if err := os.Remove(i.envFilePath); err != nil {
 			return fmt.Errorf("failed to delete .env file: %w", err)
 		}
-		fmt.Println("✅ Deleted .env file")
+		fmt.Println("Deleted .env file")
 	} else {
-		fmt.Println("ℹ️  Kept .env file")
+		fmt.Println("Kept .env file")
 	}
 
 	// 2. Prompt to create .better-env file
@@ -241,9 +241,9 @@ func (i *ImportCommand) promptCleanup(envVars map[string]string) error {
 		if err := i.createBetterEnvFile(envVars); err != nil {
 			return fmt.Errorf("failed to create .better-env file: %w", err)
 		}
-		fmt.Println("✅ Created .better-env file")
+		fmt.Println("Created .better-env file")
 	} else {
-		fmt.Println("ℹ️  Skipped creating .better-env file")
+		fmt.Println("Skipped creating .better-env file")
 	}
 
 	return nil
