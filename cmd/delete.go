@@ -92,8 +92,8 @@ func (d *DeleteCommand) Run() error {
 
 	// If no keys were deleted, exit with error
 	if len(deleted) == 0 {
-		fmt.Fprintf(os.Stderr, "❌ None of the specified keys were found in global store\n")
-		fmt.Fprintf(os.Stderr, "ℹ️  Use 'bnv list --all' to see all keys\n")
+		fmt.Fprintf(os.Stderr, "No specified keys found in global store\n")
+		fmt.Fprintf(os.Stderr, "Use 'bnv list --all' to see all keys\n")
 		os.Exit(1)
 	}
 
@@ -133,16 +133,16 @@ func (d *DeleteCommand) Run() error {
 
 	// 9. Print results
 	if len(deleted) == 1 {
-		fmt.Printf("✅ Deleted '%s' from global store\n", deleted[0])
+		fmt.Printf("Deleted '%s' from global store\n", deleted[0])
 	} else {
-		fmt.Printf("✅ Deleted %d keys from global store: %v\n", len(deleted), deleted)
+		fmt.Printf("Deleted %d keys from global store: %v\n", len(deleted), deleted)
 	}
 
 	if len(notFound) > 0 {
-		fmt.Fprintf(os.Stderr, "⚠️  Warning: The following keys were not found: %v\n", notFound)
+		fmt.Fprintf(os.Stderr, "Warning: The following keys were not found: %v\n", notFound)
 	}
 
-	fmt.Println("⚠️  Warning: These keys may still be referenced in project .better-env files")
+	fmt.Println("Warning: These keys may still be referenced in project .better-env files")
 
 	return nil
 }
