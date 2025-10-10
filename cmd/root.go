@@ -29,4 +29,5 @@ func init() {
 	rootCmd.AddCommand(showCmd)
 	rootCmd.AddCommand(copyCmd)
 	rootCmd.AddCommand(loadCmd)
+	rootCmd.AddCommand(unloadCmd)
 }
