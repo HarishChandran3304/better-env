@@ -92,7 +92,7 @@ func (l *LoadCommand) Run() error {
 			if value, exists := secrets[key]; exists {
 				fmt.Printf("export %s=%s\n", key, escapeShellValue(value))
 			} else {
-				fmt.Fprintf(os.Stderr, "⚠️  Warning: '%s' not found in secrets store\n", key)
+				fmt.Fprintf(os.Stderr, "Warning: '%s' not found in secrets store\n", key)
 			}
 		}
 	}
