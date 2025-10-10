@@ -46,14 +46,13 @@ func (l *ListCommand) listProjectKeys() error {
 	}
 
 	if len(projectConfig.Keys) == 0 {
-		fmt.Println("No keys specified in .better-env (all keys from global store will be loaded)")
+		fmt.Println("No project keys configured")
 		return nil
 	}
 
-	fmt.Printf("Keys configured in current project (%d):\n", len(projectConfig.Keys))
 	sort.Strings(projectConfig.Keys)
 	for _, key := range projectConfig.Keys {
-		fmt.Printf("  • %s\n", key)
+		fmt.Println(key)
 	}
 
 	return nil
@@ -128,9 +127,8 @@ func (l *ListCommand) listGlobalStore() error {
 	}
 	sort.Strings(keys)
 
-	fmt.Printf("All keys in global store (%d):\n", len(keys))
 	for _, key := range keys {
-		fmt.Printf("  • %s\n", key)
+		fmt.Println(key)
 	}
 
 	return nil
