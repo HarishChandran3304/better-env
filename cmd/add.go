@@ -58,9 +58,6 @@ func (a *AddCommand) Run() error {
 			projectConfig.Keys = append(projectConfig.Keys, key)
 			existingKeys[key] = true
 			addedCount++
-			fmt.Printf("✅ '%s' has been added to the project.\n", key)
-		} else {
-			fmt.Printf("ℹ️ '%s' is already in the project.\n", key)
 		}
 	}
 
@@ -75,9 +72,9 @@ func (a *AddCommand) Run() error {
 			return fmt.Errorf("failed to write .better-env: %w", err)
 		}
 
-		fmt.Printf("\n✅ Successfully added %d key(s) to .better-env\n", addedCount)
+		fmt.Printf("Added %d key(s) to .better-env\n", addedCount)
 	} else {
-		fmt.Println("\nℹ️ No new keys were added")
+		fmt.Println("No changes")
 	}
 
 	return nil
