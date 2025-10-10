@@ -1,24 +1,21 @@
-better-env
-===========
+# better-env
 
 Encrypted secrets, zero plaintext, instant runtime loading.
 
 better-env is a simple, secure CLI tool to manage environment variables centrally on your machine using PGP encryption (via ProtonMail's gopenpgp). Keep your secrets out of repos and out of plaintext files, loading them into apps only at runtime. Never accidentally commit secrets again - .better-env files are fully commit-safe.
 
-Platform support
-----------------
+## Platform support
 
 better-env officially supports Unix-like shells (macOS, Linux). Windows is partially supported: all core commands work, but `load`/`unload` shell integration is POSIX-only and won’t affect PowerShell/cmd environments. See [Windows Support](#windows-support) for details and workarounds.
 
-Why better-env?
+## Why better-env?
 - Global encrypted store for all your secrets (per user)
 - No plaintext .env files needed in projects
 - Easy per-project selection of which keys to load
 - Shell-friendly: export/unset to the parent shell, or run commands in an isolated child environment
 
 
-Index
------
+## Index
 
 - [Installation](#installation)
 - [Setup](#setup)
@@ -30,16 +27,15 @@ Index
 - [Roadmap](#roadmap)
 
 
-Installation
-------------
+## Installation
 
-Prerequisites:
+### Prerequisites:
 - Go 1.21+ (to build from source)
 - Git 2.30+ (if building from a clone)
 - Clipboard tools (Linux only): `xclip` or `xsel` for `bnv copy`
 - GPG external tool is NOT required; better-env embeds GPG functionality using ProtonMail’s gopenpgp library.
 
-Install from source:
+### Install from source:
 
 ```bash
 go install github.com/HarishChandran3304/better-env@latest
@@ -48,7 +44,7 @@ go install github.com/HarishChandran3304/better-env@latest
 This installs the `bnv` binary to your `GOBIN` (usually `~/go/bin`). Ensure it’s on your `PATH`.
 
 
-Build from source (git clone):
+### Build from source (git clone):
 
 ```bash
 git clone https://github.com/HarishChandran3304/better-env.git
@@ -58,8 +54,7 @@ sudo mv better-env /usr/local/bin/bnv
 ```
 
 
-Setup
------
+## Setup
 
 1) One-time setup (creates the encrypted store and a keypair):
 
@@ -94,8 +89,7 @@ For any other shell just add the following to your shell config file:
 bnv() { if [ "$1" = "load" ]; then eval "$(command bnv load)"; elif [ "$1" = "unload" ]; then eval "$(command bnv unload)"; else command bnv "$@"; fi }
 ```
 
-Usage
------
+## Usage
 
 1) Store secrets in the global store:
 ```bash
@@ -116,8 +110,7 @@ bnv run node server.js           # run a command with secrets only in the child 
 ```
 
 
-Core Concepts
--------------
+## Core Concepts
 
 - Global store: A single encrypted store of all your secrets lives under `$(os.UserConfigDir)/better-env`.
 - Project link: Each project has a `.better-env` JSON file that links to your store and lists which keys the project uses.
@@ -126,12 +119,11 @@ Core Concepts
   - `bnv run`: run a command with secrets only available to the child process
 
 
-Command Reference
------------------
+## Command Reference
 
 All commands are subcommands of `bnv`. Use `-h` with any command for help.
 
-Setup and Configuration
+### Setup and Configuration
 - setup
   - usage: `bnv setup`
   - Description: Initialize better-env, generate a keypair, and create the encrypted store.
@@ -144,7 +136,7 @@ Setup and Configuration
     - `--force, -f`: overwrite an existing `.better-env`
 
 
-Managing Secrets (Global Store)
+### Managing Secrets (Global Store)
 - store
   - usage: `bnv store KEY`
   - Description: Add or update `KEY` in the encrypted store. Reads value interactively; prompts for passphrase.
@@ -177,7 +169,7 @@ Managing Secrets (Global Store)
     - `bnv import /abs/path/to/.env`
 
 
-Managing Project Keys (.better-env)
+### Managing Project Keys (.better-env)
 - add
   - usage: `bnv add KEY1 [KEY2 KEY3 ...]`
   - Description: Add one or more key names to the current project’s `.better-env` so they’ll be loaded.
@@ -191,7 +183,7 @@ Managing Project Keys (.better-env)
   - Description: List keys for the current project. With `--all`, list all keys in the global store.
 
 
-Loading and Running
+### Loading and Running
 - load
   - usage: `bnv load`
   - Description: Decrypt and output `export KEY='VALUE'` lines. Use via the shell function so they affect your current shell.
@@ -210,8 +202,7 @@ Loading and Running
     - `bnv run python3 main.py`
 
 
-Migration Guide
----------------
+## Migration Guide
 
 Migrate an existing project that uses a `.env` file:
 
@@ -234,16 +225,13 @@ bnv load
 bnv run your-app-command
 ```
 
-Notes for teams
----------------
+## Notes for teams
 
-- Do not commit your `.env`. Each developer should run `bnv setup` locally and then `bnv init` or use `bnv import` in their clone.
 - `.better-env` is commit-safe. It no longer stores user-specific paths and can be safely versioned.
 - CI/CD usage: prefer `bnv run` to scope secrets to a single process.
 
 
-Roadmap
--------
+## Roadmap
 
 - [ ] Backup/restore helpers for the encrypted store
 - [ ] Optional multi-profile/namespaces per project
@@ -255,8 +243,7 @@ Roadmap
 - [ ] Improve support for team-based collaboration and workflows
 
 
-Windows Support
----------------
+## Windows Support
 
 Status: partial
 
@@ -272,4 +259,3 @@ Workarounds:
 
 Planned:
 - Native PowerShell integration.
-
