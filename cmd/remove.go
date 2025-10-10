@@ -71,8 +71,8 @@ func (r *RemoveCommand) Run() error {
 
 	// If no keys were removed, exit with error
 	if len(removed) == 0 {
-		fmt.Fprintf(os.Stderr, "❌ None of the specified keys were found in project configuration\n")
-		fmt.Fprintf(os.Stderr, "ℹ️ Use 'bnv list' to see configured keys\n")
+		fmt.Fprintf(os.Stderr, "No specified keys found in project configuration\n")
+		fmt.Fprintf(os.Stderr, "Use 'bnv list' to see configured keys\n")
 		os.Exit(1)
 	}
 
@@ -90,16 +90,16 @@ func (r *RemoveCommand) Run() error {
 
 	// 5. Print results
 	if len(removed) == 1 {
-		fmt.Printf("✅ Removed '%s' from project configuration\n", removed[0])
+		fmt.Printf("Removed '%s' from project configuration\n", removed[0])
 	} else {
-		fmt.Printf("✅ Removed %d keys from project configuration: %v\n", len(removed), removed)
+		fmt.Printf("Removed %d keys from project configuration: %v\n", len(removed), removed)
 	}
 
 	if len(notFound) > 0 {
-		fmt.Fprintf(os.Stderr, "⚠️  Warning: The following keys were not found: %v\n", notFound)
+		fmt.Fprintf(os.Stderr, "Warning: The following keys were not found: %v\n", notFound)
 	}
 
-	fmt.Println("ℹ️  Note: The keys still exist in the global store. Use 'bnv delete' to remove them completely.")
+	fmt.Println("Note: The keys still exist in the global store. Use 'bnv delete' to remove them completely.")
 
 	return nil
 }
