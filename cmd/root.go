@@ -31,4 +31,5 @@ func init() {
 	rootCmd.AddCommand(loadCmd)
 	rootCmd.AddCommand(unloadCmd)
 	rootCmd.AddCommand(runCmd)
+	rootCmd.AddCommand(importCmd)
 }
