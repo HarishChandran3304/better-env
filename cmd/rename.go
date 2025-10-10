@@ -130,8 +130,8 @@ func (r *RenameCommand) Run() error {
 		return fmt.Errorf("failed to write secrets file: %w", err)
 	}
 
-	fmt.Printf("✅ Renamed '%s' to '%s' in global store\n", r.oldKey, r.newKey)
-	fmt.Println("⚠️  Warning: Project .better-env files may still reference the old key name. Remember to update them manually.")
+	fmt.Printf("Renamed '%s' to '%s' in global store\n", r.oldKey, r.newKey)
+	fmt.Println("Note: Project .better-env files may still reference the old key name. Update them manually.")
 
 	// 11. Offer to update current project's .better-env if it exists
 	if err := r.updateCurrentProject(); err != nil {
@@ -174,7 +174,7 @@ func (r *RenameCommand) updateCurrentProject() error {
 	}
 
 	// Ask user if they want to update
-	fmt.Print("\nUpdate current project's .better-env file? (y/n): ")
+	fmt.Print("\n.better-env file detected in current directory. Update current project's .better-env file? (y/n): ")
 	reader := bufio.NewReader(os.Stdin)
 	response, err := reader.ReadString('\n')
 	if err != nil {
@@ -196,7 +196,7 @@ func (r *RenameCommand) updateCurrentProject() error {
 		return err
 	}
 
-	fmt.Println("✅ Updated current project's .better-env file")
+	fmt.Println("Updated current project's .better-env file")
 	return nil
 }
 
