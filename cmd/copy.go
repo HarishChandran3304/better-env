@@ -95,9 +95,9 @@ func (c *CopyCommand) Run() error {
 		}
 
 		if len(c.keys) == 1 {
-			fmt.Printf("✅ Secret '%s' copied to clipboard\n", c.keys[0])
+			fmt.Printf("Copied '%s' to clipboard\n", c.keys[0])
 		} else {
-			fmt.Printf("✅ %d secrets copied to clipboard\n", len(values))
+			fmt.Printf("Copied %d secrets to clipboard\n", len(values))
 		}
 	}
 
@@ -105,7 +105,7 @@ func (c *CopyCommand) Run() error {
 	if len(notFound) > 0 {
 		fmt.Println()
 		for _, key := range notFound {
-			fmt.Printf("⚠️  Secret '%s' not found\n", key)
+			fmt.Printf("Secret '%s' not found\n", key)
 		}
 	}
 
