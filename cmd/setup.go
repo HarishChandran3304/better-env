@@ -110,7 +110,19 @@ func (s *SetupCommand) Run() error {
 	fmt.Println()
 	fmt.Println("Next steps:")
 	fmt.Println("  1. Enter the following command to finish your setup:")
-	fmt.Println(`     echo 'bnv() { if [ "$1" = "load" ]; then eval "$(command bnv load)"; elif [ "$1" = "unload" ]; then eval "$(command bnv unload)"; else command bnv "$@"; fi }' >> ~/.zshrc && source ~/.zshrc`)
+	shell := os.Getenv("SHELL")
+	rcFile := ""
+	switch {
+	case strings.HasSuffix(shell, "zsh"):
+		rcFile = "~/.zshrc"
+	case strings.HasSuffix(shell, "bash"):
+		rcFile = "~/.bashrc"
+	default:
+		fmt.Println("     Add the following to your shell's config file:")
+		fmt.Println(`     bnv() { if [ "$1" = "load" ]; then eval "$(command bnv load)"; elif [ "$1" = "unload" ]; then eval "$(command bnv unload)"; else command bnv "$@"; fi }`)
+		return nil
+	}
+	fmt.Printf("     echo 'bnv() { if [ \"$1\" = \"load\" ]; then eval \"$(command bnv load)\"; elif [ \"$1\" = \"unload\" ]; then eval \"$(command bnv unload)\"; else command bnv \"$@\"; fi }' >> %s && source %s\n", rcFile, rcFile)
 	fmt.Println("  2. Store secrets securely: bnv store KEY VALUE")
 	fmt.Println("  3. Navigate to your project: cd my/project")
 	fmt.Println("  4. Initialize better-env for your project: bnv init")
