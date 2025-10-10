@@ -60,7 +60,7 @@ func (s *SetupCommand) Run() error {
 
 	// Check if already configured
 	if _, err := os.Stat(configPath); err == nil {
-		fmt.Printf("⚠️  better-env is already configured at: %s\n", storePath)
+		fmt.Printf("better-env is already configured at: %s\n", storePath)
 		if !s.askYesNo("Do you want to reconfigure?") {
 			fmt.Println("Setup cancelled.")
 			return nil
@@ -73,7 +73,7 @@ func (s *SetupCommand) Run() error {
 	}
 
 	fmt.Println()
-	fmt.Println("🚀 better-env Setup")
+	fmt.Println("better-env setup")
 
 	// Step 1: GPG Key Generation
 	key, err := s.handleKeySetup()
@@ -104,9 +104,9 @@ func (s *SetupCommand) Run() error {
 	}
 
 	fmt.Println()
-	fmt.Println("✅ better-env setup complete!")
-	fmt.Printf("📁 Store location: %s\n", storePath)
-	fmt.Printf("🔑 Key fingerprint: %s\n", config.KeyFingerprint)
+	fmt.Println("Setup complete")
+	fmt.Printf("Store location: %s\n", storePath)
+	fmt.Printf("Key fingerprint: %s\n", config.KeyFingerprint)
 	fmt.Println()
 	fmt.Println("Next steps:")
 	fmt.Println("  1. Enter the following command to finish your setup:")
@@ -133,7 +133,7 @@ func getStorePath() (string, error) {
 
 func (s *SetupCommand) handleKeySetup() (*crypto.Key, error) {
 	fmt.Println()
-	fmt.Println("🔑 First, let's set up a new GPG key for you.")
+	fmt.Println("Generating a new GPG key...")
 	return s.generateNewKey()
 }
 
