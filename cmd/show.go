@@ -87,7 +87,7 @@ func (s *ShowCommand) Run() error {
 	if len(notFound) > 0 {
 		fmt.Println()
 		for _, key := range notFound {
-			fmt.Printf("⚠️  Secret '%s' not found\n", key)
+			fmt.Printf("Secret '%s' not found\n", key)
 		}
 	}
 
