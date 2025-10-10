@@ -102,7 +102,7 @@ func (r *RunCommand) Run() error {
 			if value, exists := secrets[key]; exists {
 				env = append(env, fmt.Sprintf("%s=%s", key, value))
 			} else {
-				fmt.Fprintf(os.Stderr, "⚠️  Warning: '%s' not found in secrets store\n", key)
+				fmt.Fprintf(os.Stderr, "Warning: '%s' not found in secrets store\n", key)
 			}
 		}
 	}
