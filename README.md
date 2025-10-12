@@ -43,7 +43,7 @@ bnv load
 
 ## Platforms supported
 
-better-env officially supports Unix-like shells (macOS, Linux). Windows is partially supported: all core commands work, but `load`/`unload` shell integration is POSIX-only and won’t affect PowerShell/cmd environments. See [Windows Support](#windows-support) for details and workarounds.
+better-env officially supports Unix-like shells (macOS, Linux). Windows is partially supported: all core commands work, but `load`/`unload` shell integration is POSIX-only and won’t affect PowerShell/cmd environments.
 
 ## Learn More
 
