@@ -14,7 +14,7 @@ better-env is a simple, secure CLI tool to manage environment variables centrall
 ### Installation
 
 ```bash
-go install github.com/better-env/better-env@latest # Install binary
+go install github.com/HarishChandran3304/better-env@latest # Install binary
 sudo mv ~/go/bin/better-env ~/usr/local/bin/bnv # Move to PATH
 ```
 
