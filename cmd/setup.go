@@ -109,27 +109,27 @@ func (s *SetupCommand) Run() error {
 	fmt.Printf("Key fingerprint: %s\n", config.KeyFingerprint)
 	fmt.Println()
 	fmt.Println("Next steps:")
-	fmt.Println("  1. Enter the following command to finish your setup:")
 	shell := os.Getenv("SHELL")
-	rcFile := ""
 	switch {
+	// zsh
 	case strings.HasSuffix(shell, "zsh"):
-		rcFile = "~/.zshrc"
+		fmt.Println("  Enter the following command to finish your setup:")
+		fmt.Println("  echo 'bnv() { if [ \"$1\" = \"load\" ]; then eval \"$(command bnv load)\"; elif [ \"$1\" = \"unload\" ]; then eval \"$(command bnv unload)\"; else command bnv \"$@\"; fi }' >> ~/.zshrc && source ~/.zshrc")
+	// bash
 	case strings.HasSuffix(shell, "bash"):
-		rcFile = "~/.bashrc"
+		fmt.Println("  Enter the following command to finish your setup:")
+		fmt.Println("  echo 'bnv() { if [ \"$1\" = \"load\" ]; then eval \"$(command bnv load)\"; elif [ \"$1\" = \"unload\" ]; then eval \"$(command bnv unload)\"; else command bnv \"$@\"; fi }' >> ~/.bashrc && source ~/.bashrc")
+	// fish
+	case strings.HasSuffix(shell, "fish"):
+		fmt.Println("  Enter the following command to finish your setup:")
+		fmt.Println("  echo 'bnv() { if [ \"$1\" = \"load\" ]; then eval \"$(command bnv load)\"; elif [ \"$1\" = \"unload\" ]; then eval \"$(command bnv unload)\"; else command bnv \"$@\"; fi }' >> ~/.config/fish/config.fish && source ~/.config/fish/config.fish")
+	// other
 	default:
-		fmt.Println("     Add the following to your shell's config file:")
-		fmt.Println(`     bnv() { if [ "$1" = "load" ]; then eval "$(command bnv load)"; elif [ "$1" = "unload" ]; then eval "$(command bnv unload)"; else command bnv "$@"; fi }`)
+		fmt.Println("  Add the following to your shell's config file:")
+		fmt.Println(`  bnv() { if [ "$1" = "load" ]; then eval "$(command bnv load)"; elif [ "$1" = "unload" ]; then eval "$(command bnv unload)"; else command bnv "$@"; fi }`)
 		return nil
 	}
-	fmt.Printf("     echo 'bnv() { if [ \"$1\" = \"load\" ]; then eval \"$(command bnv load)\"; elif [ \"$1\" = \"unload\" ]; then eval \"$(command bnv unload)\"; else command bnv \"$@\"; fi }' >> %s && source %s\n", rcFile, rcFile)
-	fmt.Println("  2. Store secrets securely: bnv store KEY VALUE")
-	fmt.Println("  3. Navigate to your project: cd my/project")
-	fmt.Println("  4. Initialize better-env for your project: bnv init")
-	fmt.Println("  5. Add secrets to your project: bnv add KEY")
-	fmt.Println("  6. Load secrets for your project: bnv load")
-	fmt.Println()
-	fmt.Println("Check out the docs at https://github.com/HarishChandran3304/better-env for more information!")
+	fmt.Println("To learn how to use better-env check out the docs at https://better-env.dev/docs")
 
 	return nil
 }
