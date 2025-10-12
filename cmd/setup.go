@@ -104,31 +104,30 @@ func (s *SetupCommand) Run() error {
 	}
 
 	fmt.Println()
-	fmt.Println("Setup complete")
 	fmt.Printf("Store location: %s\n", storePath)
 	fmt.Printf("Key fingerprint: %s\n", config.KeyFingerprint)
 	fmt.Println()
-	fmt.Println("Next steps:")
 	shell := os.Getenv("SHELL")
 	switch {
 	// zsh
 	case strings.HasSuffix(shell, "zsh"):
-		fmt.Println("  Enter the following command to finish your setup:")
-		fmt.Println("  echo 'bnv() { if [ \"$1\" = \"load\" ]; then eval \"$(command bnv load)\"; elif [ \"$1\" = \"unload\" ]; then eval \"$(command bnv unload)\"; else command bnv \"$@\"; fi }' >> ~/.zshrc && source ~/.zshrc")
+		fmt.Println("Enter the following command to finish your setup:")
+		fmt.Println("echo 'bnv() { if [ \"$1\" = \"load\" ]; then eval \"$(command bnv load)\"; elif [ \"$1\" = \"unload\" ]; then eval \"$(command bnv unload)\"; else command bnv \"$@\"; fi }' >> ~/.zshrc && source ~/.zshrc")
 	// bash
 	case strings.HasSuffix(shell, "bash"):
-		fmt.Println("  Enter the following command to finish your setup:")
-		fmt.Println("  echo 'bnv() { if [ \"$1\" = \"load\" ]; then eval \"$(command bnv load)\"; elif [ \"$1\" = \"unload\" ]; then eval \"$(command bnv unload)\"; else command bnv \"$@\"; fi }' >> ~/.bashrc && source ~/.bashrc")
+		fmt.Println("Enter the following command to finish your setup:")
+		fmt.Println("echo 'bnv() { if [ \"$1\" = \"load\" ]; then eval \"$(command bnv load)\"; elif [ \"$1\" = \"unload\" ]; then eval \"$(command bnv unload)\"; else command bnv \"$@\"; fi }' >> ~/.bashrc && source ~/.bashrc")
 	// fish
 	case strings.HasSuffix(shell, "fish"):
-		fmt.Println("  Enter the following command to finish your setup:")
-		fmt.Println("  echo 'bnv() { if [ \"$1\" = \"load\" ]; then eval \"$(command bnv load)\"; elif [ \"$1\" = \"unload\" ]; then eval \"$(command bnv unload)\"; else command bnv \"$@\"; fi }' >> ~/.config/fish/config.fish && source ~/.config/fish/config.fish")
+		fmt.Println("Enter the following command to finish your setup:")
+		fmt.Println("echo 'bnv() { if [ \"$1\" = \"load\" ]; then eval \"$(command bnv load)\"; elif [ \"$1\" = \"unload\" ]; then eval \"$(command bnv unload)\"; else command bnv \"$@\"; fi }' >> ~/.config/fish/config.fish && source ~/.config/fish/config.fish")
 	// other
 	default:
-		fmt.Println("  Add the following to your shell's config file:")
-		fmt.Println(`  bnv() { if [ "$1" = "load" ]; then eval "$(command bnv load)"; elif [ "$1" = "unload" ]; then eval "$(command bnv unload)"; else command bnv "$@"; fi }`)
+		fmt.Println("Add the following to your shell's config file:")
+		fmt.Println(`bnv() { if [ "$1" = "load" ]; then eval "$(command bnv load)"; elif [ "$1" = "unload" ]; then eval "$(command bnv unload)"; else command bnv "$@"; fi }`)
 		return nil
 	}
+	fmt.Println()
 	fmt.Println("To learn how to use better-env check out the docs at https://better-env.dev/docs")
 
 	return nil
