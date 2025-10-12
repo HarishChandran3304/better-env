@@ -64,14 +64,14 @@ tmpdir=$(mktemp -d)
 trap 'rm -rf "$tmpdir"' EXIT INT TERM
 
 # Download files
-echo "Downloading $archive…"
-fetch "$base_url/$archive" > "$tmpdir/$archive"
-fetch "$base_url/checksums.txt" > "$tmpdir/checksums.txt"
+echo "Downloading ${archive}…"
+fetch "${base_url}/${archive}" > "${tmpdir}/${archive}"
+fetch "${base_url}/checksums.txt" > "${tmpdir}/checksums.txt"
 
 # Verify checksum
 echo "Verifying checksum…"
 cd "$tmpdir"
-checksum_line=$(grep "[[:space:]]$archive$" checksums.txt || true)
+checksum_line=$(grep "[[:space:]]${archive}$" checksums.txt || true)
 
 if [ -z "$checksum_line" ]; then
   echo "Error: checksum for $archive not found in checksums.txt" >&2
@@ -98,7 +98,7 @@ fi
 
 # Extract
 echo "Extracting…"
-tar -xzf "$archive"
+tar -xzf "${archive}"
 
 if [ ! -f "$BIN" ]; then
   echo "Error: binary '$BIN' not found after extraction" >&2
