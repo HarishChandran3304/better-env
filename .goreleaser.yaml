@@ -1,0 +1,42 @@
+project_name: bnv
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: bnv
+    main: ./main.go
+    binary: bnv
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w -X github.com/HarishChandran3304/better-env/cmd.Version={{.Version}}
+    goos: [linux, darwin, windows]
+    goarch: [amd64, arm64]
+
+archives:
+  - format: tar.gz
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - LICENSE
+      - README.md
+
+checksum:
+  name_template: "checksums.txt"
+
+changelog:
+  use: github
+
+release:
+  github:
+    owner: HarishChandran3304
+    name: better-env
+  draft: false
+  prerelease: false
+
