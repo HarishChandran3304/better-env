@@ -14,22 +14,9 @@ better-env is a simple, secure CLI tool to manage environment variables centrall
 ### Installation
 
 - Script (macOS/Linux):
-
 ```bash
 curl -fsSL https://raw.githubusercontent.com/HarishChandran3304/better-env/main/scripts/install.sh | sh
 ```
-
-- Go install (devs):
-
-```bash
-go install github.com/HarishChandran3304/better-env@latest
-mv ~/go/bin/bnv /usr/local/bin/bnv # ensure on PATH
-```
-
-- Manual download:
-  - Download the latest release archive for your OS/ARCH from the Releases page
-  - Verify the checksum using `shasum -a 256` and `checksums.txt`
-  - Extract and place `bnv` into a directory on your `PATH`
 
 ### Setup
 
