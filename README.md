@@ -41,24 +41,6 @@ bnv add KEY
 bnv load
 ```
 
-### Shell Completions
-
-Generate completions and install for your shell:
-
-```bash
-# bash
-bnv completion bash > ~/.local/share/bash-completion/bnv || sudo tee /etc/bash_completion.d/bnv > /dev/null
-
-# zsh
-bnv completion zsh > "${fpath[1]}/_bnv" 2>/dev/null || bnv completion zsh > ~/.zsh/completions/_bnv
-
-# fish
-bnv completion fish > ~/.config/fish/completions/bnv.fish
-
-# powershell
-bnv completion powershell | Out-String | Invoke-Expression
-```
-
 ## Platforms supported
 
 better-env officially supports Unix-like shells (macOS, Linux). Windows is partially supported: all core commands work, but `load`/`unload` shell integration is POSIX-only and won’t affect PowerShell/cmd environments.
