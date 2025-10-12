@@ -13,10 +13,23 @@ better-env is a simple, secure CLI tool to manage environment variables centrall
 ## Quickstart
 ### Installation
 
+- Script (macOS/Linux):
+
 ```bash
-go install github.com/HarishChandran3304/better-env@latest # Install binary
-sudo mv ~/go/bin/better-env ~/usr/local/bin/bnv # Move to PATH
+curl -fsSL https://raw.githubusercontent.com/HarishChandran3304/better-env/main/scripts/install.sh | sh
 ```
+
+- Go install (devs):
+
+```bash
+go install github.com/HarishChandran3304/better-env@latest
+mv ~/go/bin/bnv /usr/local/bin/bnv # ensure on PATH
+```
+
+- Manual download:
+  - Download the latest release archive for your OS/ARCH from the Releases page
+  - Verify the checksum using `shasum -a 256` and `checksums.txt`
+  - Extract and place `bnv` into a directory on your `PATH`
 
 ### Setup
 
@@ -39,6 +52,24 @@ cd /path/to/my/project
 bnv init
 bnv add KEY
 bnv load
+```
+
+### Shell Completions
+
+Generate completions and install for your shell:
+
+```bash
+# bash
+bnv completion bash > ~/.local/share/bash-completion/bnv || sudo tee /etc/bash_completion.d/bnv > /dev/null
+
+# zsh
+bnv completion zsh > "${fpath[1]}/_bnv" 2>/dev/null || bnv completion zsh > ~/.zsh/completions/_bnv
+
+# fish
+bnv completion fish > ~/.config/fish/completions/bnv.fish
+
+# powershell
+bnv completion powershell | Out-String | Invoke-Expression
 ```
 
 ## Platforms supported
