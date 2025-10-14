@@ -117,10 +117,6 @@ func (s *SetupCommand) Run() error {
 	case strings.HasSuffix(shell, "bash"):
 		fmt.Println("Enter the following command to finish your setup:")
 		fmt.Println("echo 'bnv() { if [ \"$1\" = \"load\" ]; then eval \"$(command bnv load)\"; elif [ \"$1\" = \"unload\" ]; then eval \"$(command bnv unload)\"; else command bnv \"$@\"; fi }' >> ~/.bashrc && source ~/.bashrc")
-	// fish
-	case strings.HasSuffix(shell, "fish"):
-		fmt.Println("Enter the following command to finish your setup:")
-		fmt.Println("echo 'bnv() { if [ \"$1\" = \"load\" ]; then eval \"$(command bnv load)\"; elif [ \"$1\" = \"unload\" ]; then eval \"$(command bnv unload)\"; else command bnv \"$@\"; fi }' >> ~/.config/fish/config.fish && source ~/.config/fish/config.fish")
 	// other
 	default:
 		fmt.Println("Add the following to your shell's config file:")
