@@ -1,158 +1,161 @@
 package cmd
 
 import (
-	"encoding/json"
-	"fmt"
-	"os"
-	"path/filepath"
+    "encoding/json"
+    "fmt"
+    "os"
+    "path/filepath"
+    "strings"
 
-	beinternal "github.com/HarishChandran3304/better-env/internal"
-	"github.com/ProtonMail/gopenpgp/v3/crypto"
-	"github.com/spf13/cobra"
+    beinternal "github.com/HarishChandran3304/better-env/internal"
+    "github.com/HarishChandran3304/better-env/internal/ui"
+    "github.com/ProtonMail/gopenpgp/v3/crypto"
+    "github.com/spf13/cobra"
 )
 
 type DeleteCommand struct {
-	keys []string
+    keys []string
 }
 
 func NewDeleteCommand(keys []string) *DeleteCommand {
-	return &DeleteCommand{
-		keys: keys,
-	}
+    return &DeleteCommand{
+        keys: keys,
+    }
 }
 
 func (d *DeleteCommand) Run() error {
-	// 1. Get store path and load config
-	storePath, err := getStorePath()
-	if err != nil {
-		return fmt.Errorf("failed to determine store path: %w", err)
-	}
+    // 1. Get store path and load config
+    storePath, err := getStorePath()
+    if err != nil {
+        return fmt.Errorf("failed to determine store path: %w", err)
+    }
 
-	configPath := filepath.Join(storePath, ConfigFileName)
-	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		return fmt.Errorf("better-env is not configured. Run 'bnv setup' first")
-	}
+    configPath := filepath.Join(storePath, ConfigFileName)
+    if _, err := os.Stat(configPath); os.IsNotExist(err) {
+        return fmt.Errorf("better-env is not configured. Run 'bnv setup' first")
+    }
 
-	// 2. Load the private key
-	privateKeyPath := filepath.Join(storePath, "private.key")
-	privateKeyArmored, err := os.ReadFile(privateKeyPath)
-	if err != nil {
-		return fmt.Errorf("failed to read private key: %w", err)
-	}
+    // 2. Load the private key
+    privateKeyPath := filepath.Join(storePath, "private.key")
+    privateKeyArmored, err := os.ReadFile(privateKeyPath)
+    if err != nil {
+        return fmt.Errorf("failed to read private key: %w", err)
+    }
 
-	// 3. Prompt for passphrase and unlock (3 attempts)
-	privateKey, err := beinternal.PromptAndUnlockPrivateKey(privateKeyArmored, false, 3)
-	if err != nil {
-		return fmt.Errorf("failed to unlock private key: %w", err)
-	}
-	defer privateKey.ClearPrivateParams()
+    // 3. Prompt for passphrase and unlock (3 attempts)
+    privateKey, err := beinternal.PromptAndUnlockPrivateKey(privateKeyArmored, false, 3)
+    if err != nil {
+        return fmt.Errorf("failed to unlock private key: %w", err)
+    }
+    defer privateKey.ClearPrivateParams()
 
-	// 4. Load and decrypt existing secrets
-	secretsPath := filepath.Join(storePath, SecretsFileName)
-	encryptedData, err := os.ReadFile(secretsPath)
-	if err != nil {
-		return fmt.Errorf("failed to read secrets file: %w", err)
-	}
+    // 4. Load and decrypt existing secrets
+    secretsPath := filepath.Join(storePath, SecretsFileName)
+    encryptedData, err := os.ReadFile(secretsPath)
+    if err != nil {
+        return fmt.Errorf("failed to read secrets file: %w", err)
+    }
 
-	pgp := crypto.PGP()
-	decHandle, err := pgp.Decryption().DecryptionKey(privateKey).New()
-	if err != nil {
-		return fmt.Errorf("failed to create decryption handle: %w", err)
-	}
-	defer decHandle.ClearPrivateParams()
+    pgp := crypto.PGP()
+    decHandle, err := pgp.Decryption().DecryptionKey(privateKey).New()
+    if err != nil {
+        return fmt.Errorf("failed to create decryption handle: %w", err)
+    }
+    defer decHandle.ClearPrivateParams()
 
-	decrypted, err := decHandle.Decrypt(encryptedData, crypto.Bytes)
-	if err != nil {
-		return fmt.Errorf("failed to decrypt secrets: %w", err)
-	}
+    decrypted, err := decHandle.Decrypt(encryptedData, crypto.Bytes)
+    if err != nil {
+        return fmt.Errorf("failed to decrypt secrets: %w", err)
+    }
 
-	// 5. Parse existing secrets
-	var secrets map[string]string
-	if err := json.Unmarshal(decrypted.Bytes(), &secrets); err != nil {
-		return fmt.Errorf("failed to parse secrets: %w", err)
-	}
+    // 5. Parse existing secrets
+    var secrets map[string]string
+    if err := json.Unmarshal(decrypted.Bytes(), &secrets); err != nil {
+        return fmt.Errorf("failed to parse secrets: %w", err)
+    }
 
-	// 6. Delete the keys and track results
-	notFound := []string{}
-	deleted := []string{}
+    // 6. Delete the keys and track results
+    notFound := []string{}
+    deleted := []string{}
 
-	for _, key := range d.keys {
-		if _, exists := secrets[key]; exists {
-			delete(secrets, key)
-			deleted = append(deleted, key)
-		} else {
-			notFound = append(notFound, key)
-		}
-	}
+    for _, key := range d.keys {
+        if _, exists := secrets[key]; exists {
+            delete(secrets, key)
+            deleted = append(deleted, key)
+        } else {
+            notFound = append(notFound, key)
+        }
+    }
 
-	// If no keys were deleted, exit with error
-	if len(deleted) == 0 {
-		fmt.Fprintf(os.Stderr, "No specified keys found in global store\n")
-		fmt.Fprintf(os.Stderr, "Use 'bnv list --all' to see all keys\n")
-		os.Exit(1)
-	}
+    // If no keys were deleted, exit with error
+    if len(deleted) == 0 {
+        fmt.Fprintln(os.Stderr, ui.Error("No specified keys found in global store"))
+        fmt.Fprintln(os.Stderr, ui.Dim("Use 'bnv list --all' to see all keys"))
+        os.Exit(1)
+    }
 
-	// 7. Re-encrypt with public key
-	publicKeyPath := filepath.Join(storePath, "public.key")
-	publicKeyArmored, err := os.ReadFile(publicKeyPath)
-	if err != nil {
-		return fmt.Errorf("failed to read public key: %w", err)
-	}
+    // 7. Re-encrypt with public key
+    publicKeyPath := filepath.Join(storePath, "public.key")
+    publicKeyArmored, err := os.ReadFile(publicKeyPath)
+    if err != nil {
+        return fmt.Errorf("failed to read public key: %w", err)
+    }
 
-	publicKey, err := crypto.NewKeyFromArmored(string(publicKeyArmored))
-	if err != nil {
-		return fmt.Errorf("failed to load public key: %w", err)
-	}
+    publicKey, err := crypto.NewKeyFromArmored(string(publicKeyArmored))
+    if err != nil {
+        return fmt.Errorf("failed to load public key: %w", err)
+    }
 
-	// Marshal updated secrets
-	updatedData, err := json.Marshal(secrets)
-	if err != nil {
-		return fmt.Errorf("failed to marshal secrets: %w", err)
-	}
+    // Marshal updated secrets
+    updatedData, err := json.Marshal(secrets)
+    if err != nil {
+        return fmt.Errorf("failed to marshal secrets: %w", err)
+    }
 
-	// Encrypt
-	encHandle, err := pgp.Encryption().Recipient(publicKey).New()
-	if err != nil {
-		return fmt.Errorf("failed to create encryption handle: %w", err)
-	}
+    // Encrypt
+    encHandle, err := pgp.Encryption().Recipient(publicKey).New()
+    if err != nil {
+        return fmt.Errorf("failed to create encryption handle: %w", err)
+    }
 
-	pgpMessage, err := encHandle.Encrypt(updatedData)
-	if err != nil {
-		return fmt.Errorf("failed to encrypt secrets: %w", err)
-	}
+    pgpMessage, err := encHandle.Encrypt(updatedData)
+    if err != nil {
+        return fmt.Errorf("failed to encrypt secrets: %w", err)
+    }
 
-	// 8. Save encrypted secrets
-	if err := os.WriteFile(secretsPath, pgpMessage.Bytes(), 0600); err != nil {
-		return fmt.Errorf("failed to write secrets file: %w", err)
-	}
+    // 8. Save encrypted secrets
+    if err := os.WriteFile(secretsPath, pgpMessage.Bytes(), 0600); err != nil {
+        return fmt.Errorf("failed to write secrets file: %w", err)
+    }
 
-	// 9. Print results
-	if len(deleted) == 1 {
-		fmt.Printf("Deleted '%s' from global store\n", deleted[0])
-	} else {
-		fmt.Printf("Deleted %d keys from global store: %v\n", len(deleted), deleted)
-	}
+    // 9. Print results
+    if len(deleted) == 1 {
+        fmt.Println(ui.Success(fmt.Sprintf("Removed %s from the global store", deleted[0])))
+    } else {
+        fmt.Println(ui.Success(fmt.Sprintf("Removed %d keys from the global store", len(deleted))))
+        fmt.Println(ui.BulletList(deleted))
+    }
 
-	if len(notFound) > 0 {
-		fmt.Fprintf(os.Stderr, "Warning: The following keys were not found: %v\n", notFound)
-	}
+    if len(notFound) > 0 {
+        fmt.Fprintln(os.Stderr, ui.Warning(fmt.Sprintf("Not found: %s", strings.Join(notFound, ", "))))
+    }
 
-	fmt.Println("Warning: These keys may still be referenced in project .better-env files")
+    fmt.Println(ui.Warning("These keys may still be referenced in project .better-env files"))
 
-	return nil
+    return nil
 }
 
 var deleteCmd = &cobra.Command{
-	Use:   "delete KEY [KEY...]",
-	Short: "Delete one or more keys from the global store",
-	Long:  "Permanently delete keys from the global encrypted store. You will be prompted for your passphrase.",
-	Args:  cobra.MinimumNArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		dc := NewDeleteCommand(args)
-		return dc.Run()
-	},
+    Use:   "delete KEY [KEY...]",
+    Short: "Delete one or more keys from the global store",
+    Long:  "Permanently delete keys from the global encrypted store. You will be prompted for your passphrase.",
+    Args:  cobra.MinimumNArgs(1),
+    RunE: func(cmd *cobra.Command, args []string) error {
+        dc := NewDeleteCommand(args)
+        return dc.Run()
+    },
 }
 
 func init() {
-	rootCmd.AddCommand(deleteCmd)
+    rootCmd.AddCommand(deleteCmd)
 }

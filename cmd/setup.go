@@ -1,23 +1,25 @@
 package cmd
 
 import (
-	"bufio"
-	"encoding/json"
-	"fmt"
-	"os"
-	"path/filepath"
-	"strings"
-	"time"
+    "bufio"
+    "encoding/json"
+    "fmt"
+    "os"
+    "path/filepath"
+    "strings"
+    "time"
 
-	"github.com/ProtonMail/gopenpgp/v3/crypto"
-	"github.com/ProtonMail/gopenpgp/v3/profile"
-	"github.com/spf13/cobra"
-	"golang.org/x/term"
+    "github.com/HarishChandran3304/better-env/internal/ui"
+    "github.com/ProtonMail/gopenpgp/v3/crypto"
+    "github.com/ProtonMail/gopenpgp/v3/profile"
+    "github.com/charmbracelet/lipgloss"
+    "github.com/spf13/cobra"
+    "golang.org/x/term"
 )
 
 const (
-	ConfigFileName  = "config.json"
-	SecretsFileName = "secrets.gpg"
+    ConfigFileName  = "config.json"
+    SecretsFileName = "secrets.gpg"
 )
 
 const Banner = `  
@@ -27,260 +29,272 @@ const Banner = `
  / /_/ /  __/ /_/ /_/  __/ /     /_____/  /  __/ / / / |/ /   
 /_.___/\___/\__/\__/\___/_/               \___/_/ /_/|___/`
 
+var bannerStyle = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#111827", Dark: "#9EA8FF"}).Bold(true)
+
 type Config struct {
-	StorePath      string    `json:"store_path"`
-	KeyFingerprint string    `json:"key_fingerprint"`
-	CreatedAt      time.Time `json:"created_at"`
-	UpdatedAt      time.Time `json:"updated_at"`
+    StorePath      string    `json:"store_path"`
+    KeyFingerprint string    `json:"key_fingerprint"`
+    CreatedAt      time.Time `json:"created_at"`
+    UpdatedAt      time.Time `json:"updated_at"`
 }
 
 type SetupCommand struct {
-	reader     *bufio.Reader
-	passphrase string
+    reader     *bufio.Reader
+    passphrase string
 }
 
 func NewSetupCommand() *SetupCommand {
-	return &SetupCommand{
-		reader:     bufio.NewReader(os.Stdin),
-		passphrase: "",
-	}
+    return &SetupCommand{
+        reader:     bufio.NewReader(os.Stdin),
+        passphrase: "",
+    }
 }
 
 func (s *SetupCommand) Run() error {
-	fmt.Println(Banner)
-	fmt.Println()
+    fmt.Println(bannerStyle.Render(Banner))
+    fmt.Println()
+    fmt.Println(ui.Dim("Secure environment variable management"))
+    fmt.Println()
 
-	// Get the fixed store path
-	storePath, err := getStorePath()
-	if err != nil {
-		return fmt.Errorf("failed to determine store path: %w", err)
-	}
+    // Get the fixed store path
+    storePath, err := getStorePath()
+    if err != nil {
+        return fmt.Errorf("failed to determine store path: %w", err)
+    }
 
-	configPath := filepath.Join(storePath, ConfigFileName)
+    configPath := filepath.Join(storePath, ConfigFileName)
 
-	// Check if already configured
-	if _, err := os.Stat(configPath); err == nil {
-		fmt.Printf("better-env is already configured at: %s\n", storePath)
-		if !s.askYesNo("Do you want to reconfigure?") {
-			fmt.Println("Setup cancelled.")
-			return nil
-		}
-	}
+    // Check if already configured
+    if _, err := os.Stat(configPath); err == nil {
+        fmt.Println(ui.Info(fmt.Sprintf("better-env is already configured at: %s", ui.Dim(storePath))))
+        if !s.askYesNo("Do you want to reconfigure?") {
+            fmt.Println(ui.Dim("Setup cancelled."))
+            return nil
+        }
+    }
 
-	// Step 0: Create store directory
-	if err := os.MkdirAll(storePath, 0700); err != nil {
-		return fmt.Errorf("failed to create store directory: %w", err)
-	}
+    // Step 0: Create store directory
+    if err := os.MkdirAll(storePath, 0700); err != nil {
+        return fmt.Errorf("failed to create store directory: %w", err)
+    }
 
-	fmt.Println()
-	fmt.Println("better-env setup")
+    fmt.Println()
+    fmt.Println(ui.Section("Setup"))
 
-	// Step 1: GPG Key Generation
-	key, err := s.handleKeySetup()
-	if err != nil {
-		return fmt.Errorf("key setup failed: %w", err)
-	}
+    // Step 1: GPG Key Generation
+    key, err := s.handleKeySetup()
+    if err != nil {
+        return fmt.Errorf("key setup failed: %w", err)
+    }
 
-	// Step 2: Save configuration
-	config := Config{
-		StorePath:      storePath,
-		KeyFingerprint: key.GetFingerprint(),
-		CreatedAt:      time.Now(),
-		UpdatedAt:      time.Now(),
-	}
+    // Step 2: Save configuration
+    config := Config{
+        StorePath:      storePath,
+        KeyFingerprint: key.GetFingerprint(),
+        CreatedAt:      time.Now(),
+        UpdatedAt:      time.Now(),
+    }
 
-	if err := s.saveConfig(storePath, config); err != nil {
-		return fmt.Errorf("failed to save config: %w", err)
-	}
+    if err := s.saveConfig(storePath, config); err != nil {
+        return fmt.Errorf("failed to save config: %w", err)
+    }
 
-	// Step 3: Save the key pair
-	if err := s.saveKeyPair(storePath, key); err != nil {
-		return fmt.Errorf("failed to save key pair: %w", err)
-	}
+    // Step 3: Save the key pair
+    if err := s.saveKeyPair(storePath, key); err != nil {
+        return fmt.Errorf("failed to save key pair: %w", err)
+    }
 
-	// Step 4: Initialize empty secrets file
-	if err := s.initializeSecretsFile(storePath, key); err != nil {
-		return fmt.Errorf("failed to initialize secrets file: %w", err)
-	}
+    // Step 4: Initialize empty secrets file
+    if err := s.initializeSecretsFile(storePath, key); err != nil {
+        return fmt.Errorf("failed to initialize secrets file: %w", err)
+    }
 
-	fmt.Println()
-	fmt.Printf("Store location: %s\n", storePath)
-	fmt.Printf("Key fingerprint: %s\n", config.KeyFingerprint)
-	fmt.Println()
-	shell := os.Getenv("SHELL")
-	switch {
-	// zsh
-	case strings.HasSuffix(shell, "zsh"):
-		fmt.Println("Enter the following command to finish your setup:")
-		fmt.Println("echo 'bnv() { if [ \"$1\" = \"load\" ]; then eval \"$(command bnv load)\"; elif [ \"$1\" = \"unload\" ]; then eval \"$(command bnv unload)\"; else command bnv \"$@\"; fi }' >> ~/.zshrc && source ~/.zshrc")
-	// bash
-	case strings.HasSuffix(shell, "bash"):
-		fmt.Println("Enter the following command to finish your setup:")
-		fmt.Println("echo 'bnv() { if [ \"$1\" = \"load\" ]; then eval \"$(command bnv load)\"; elif [ \"$1\" = \"unload\" ]; then eval \"$(command bnv unload)\"; else command bnv \"$@\"; fi }' >> ~/.bashrc && source ~/.bashrc")
-	// other
-	default:
-		fmt.Println("Add the following to your shell's config file:")
-		fmt.Println(`bnv() { if [ "$1" = "load" ]; then eval "$(command bnv load)"; elif [ "$1" = "unload" ]; then eval "$(command bnv unload)"; else command bnv "$@"; fi }`)
-		return nil
-	}
-	fmt.Println()
-	fmt.Println("To learn how to use better-env check out the docs at https://better-env.dev/docs")
+    fmt.Println()
+    fmt.Println(ui.Success("Secure store initialised."))
+    fmt.Println(ui.KeyValue("Store", storePath))
+    fmt.Println(ui.KeyValue("Fingerprint", config.KeyFingerprint))
+    fmt.Println()
 
-	return nil
+    shell := os.Getenv("SHELL")
+    setupFn := "echo 'bnv() { if [ \"$1\" = \"load\" ]; then eval \"$(command bnv load)\"; elif [ \"$1\" = \"unload\" ]; then eval \"$(command bnv unload)\"; else command bnv \"$@\"; fi }'"
+
+    switch {
+    // zsh
+    case strings.HasSuffix(shell, "zsh"):
+        fmt.Println(ui.Info("Enter the following command to finish your setup:"))
+        fmt.Println(ui.CodeBlock(setupFn + " >> ~/.zshrc && source ~/.zshrc"))
+    // bash
+    case strings.HasSuffix(shell, "bash"):
+        fmt.Println(ui.Info("Enter the following command to finish your setup:"))
+        fmt.Println(ui.CodeBlock(setupFn + " >> ~/.bashrc && source ~/.bashrc"))
+    // other
+    default:
+        fmt.Println(ui.Info("Add the following to your shell's config file:"))
+        fmt.Println(ui.CodeBlock(`bnv() { if [ "$1" = "load" ]; then eval "$(command bnv load)"; elif [ "$1" = "unload" ]; then eval "$(command bnv unload)"; else command bnv "$@"; fi }`))
+        fmt.Println()
+        fmt.Println(ui.Dim("To learn how to use better-env check out the docs at https://better-env.dev/docs"))
+        return nil
+    }
+
+    fmt.Println()
+    fmt.Println(ui.Dim("To learn how to use better-env check out the docs at https://better-env.dev/docs"))
+
+    return nil
 }
 
 // getStorePath returns the fixed store path for better-env
 func getStorePath() (string, error) {
-	configDir, err := os.UserConfigDir()
-	if err != nil {
-		return "", err
-	}
-	return filepath.Join(configDir, "better-env"), nil
+    configDir, err := os.UserConfigDir()
+    if err != nil {
+        return "", err
+    }
+    return filepath.Join(configDir, "better-env"), nil
 }
 
 func (s *SetupCommand) handleKeySetup() (*crypto.Key, error) {
-	fmt.Println()
-	fmt.Println("Generating a new GPG key...")
-	return s.generateNewKey()
+    fmt.Println()
+    fmt.Println(ui.Dim("Generating a new GPG key..."))
+    return s.generateNewKey()
 }
 
 func (s *SetupCommand) generateNewKey() (*crypto.Key, error) {
-	fmt.Print("Enter your name: ")
-	name := s.readLine()
-	if name == "" {
-		return nil, fmt.Errorf("name is required")
-	}
+    fmt.Print(ui.Prompt("Enter your name: "))
+    name := s.readLine()
+    if name == "" {
+        return nil, fmt.Errorf("name is required")
+    }
 
-	fmt.Print("Enter your email: ")
-	email := s.readLine()
-	if email == "" {
-		return nil, fmt.Errorf("email is required")
-	}
+    fmt.Print(ui.Prompt("Enter your email: "))
+    email := s.readLine()
+    if email == "" {
+        return nil, fmt.Errorf("email is required")
+    }
 
-	fmt.Print("Enter a passphrase: ")
-	passphrase := s.readPassword()
-	s.passphrase = passphrase
+    fmt.Print(ui.Prompt("Enter a passphrase: "))
+    passphrase := s.readPassword()
+    s.passphrase = passphrase
 
-	// Use GopenPGP's key generation with default profile (Curve25519)
-	pgp := crypto.PGPWithProfile(profile.Default())
-	keyGenHandle := pgp.KeyGeneration().
-		AddUserId(name, email).
-		New()
+    // Use GopenPGP's key generation with default profile (Curve25519)
+    pgp := crypto.PGPWithProfile(profile.Default())
+    keyGenHandle := pgp.KeyGeneration().
+        AddUserId(name, email).
+        New()
 
-	key, err := keyGenHandle.GenerateKey()
-	if err != nil {
-		return nil, fmt.Errorf("failed to generate key: %w", err)
-	}
+    key, err := keyGenHandle.GenerateKey()
+    if err != nil {
+        return nil, fmt.Errorf("failed to generate key: %w", err)
+    }
 
-	// Lock the key with passphrase if provided
-	if passphrase != "" {
-		key, err = pgp.LockKey(key, []byte(passphrase))
-		if err != nil {
-			return nil, fmt.Errorf("failed to encrypt private key: %w", err)
-		}
-	}
+    // Lock the key with passphrase if provided
+    if passphrase != "" {
+        key, err = pgp.LockKey(key, []byte(passphrase))
+        if err != nil {
+            return nil, fmt.Errorf("failed to encrypt private key: %w", err)
+        }
+    }
 
-	return key, nil
+    return key, nil
 }
 
 func (s *SetupCommand) saveConfig(storePath string, config Config) error {
-	configPath := filepath.Join(storePath, ConfigFileName)
-	data, err := json.MarshalIndent(config, "", "  ")
-	if err != nil {
-		return err
-	}
-	return os.WriteFile(configPath, data, 0600)
+    configPath := filepath.Join(storePath, ConfigFileName)
+    data, err := json.MarshalIndent(config, "", "  ")
+    if err != nil {
+        return err
+    }
+    return os.WriteFile(configPath, data, 0600)
 }
 
 func (s *SetupCommand) saveKeyPair(storePath string, key *crypto.Key) error {
-	// Save private key
-	privateKeyPath := filepath.Join(storePath, "private.key")
-	armoredPrivate, err := key.Armor()
-	if err != nil {
-		return err
-	}
-	if err := os.WriteFile(privateKeyPath, []byte(armoredPrivate), 0600); err != nil {
-		return err
-	}
+    // Save private key
+    privateKeyPath := filepath.Join(storePath, "private.key")
+    armoredPrivate, err := key.Armor()
+    if err != nil {
+        return err
+    }
+    if err := os.WriteFile(privateKeyPath, []byte(armoredPrivate), 0600); err != nil {
+        return err
+    }
 
-	// Save public key
-	publicKeyPath := filepath.Join(storePath, "public.key")
-	publicKey, err := key.ToPublic()
-	if err != nil {
-		return err
-	}
-	armoredPublic, err := publicKey.Armor()
-	if err != nil {
-		return err
-	}
-	return os.WriteFile(publicKeyPath, []byte(armoredPublic), 0644)
+    // Save public key
+    publicKeyPath := filepath.Join(storePath, "public.key")
+    publicKey, err := key.ToPublic()
+    if err != nil {
+        return err
+    }
+    armoredPublic, err := publicKey.Armor()
+    if err != nil {
+        return err
+    }
+    return os.WriteFile(publicKeyPath, []byte(armoredPublic), 0644)
 }
 
 func (s *SetupCommand) initializeSecretsFile(storePath string, key *crypto.Key) error {
-	secretsPath := filepath.Join(storePath, SecretsFileName)
+    secretsPath := filepath.Join(storePath, SecretsFileName)
 
-	// Create empty secrets map
-	emptySecrets := make(map[string]string)
-	data, err := json.Marshal(emptySecrets)
-	if err != nil {
-		return err
-	}
+    // Create empty secrets map
+    emptySecrets := make(map[string]string)
+    data, err := json.Marshal(emptySecrets)
+    if err != nil {
+        return err
+    }
 
-	// Get public key for encryption
-	publicKey, err := key.ToPublic()
-	if err != nil {
-		return err
-	}
+    // Get public key for encryption
+    publicKey, err := key.ToPublic()
+    if err != nil {
+        return err
+    }
 
-	// Encrypt using GopenPGP
-	pgp := crypto.PGP()
-	encHandle, err := pgp.Encryption().Recipient(publicKey).New()
-	if err != nil {
-		return err
-	}
+    // Encrypt using GopenPGP
+    pgp := crypto.PGP()
+    encHandle, err := pgp.Encryption().Recipient(publicKey).New()
+    if err != nil {
+        return err
+    }
 
-	pgpMessage, err := encHandle.Encrypt(data)
-	if err != nil {
-		return err
-	}
+    pgpMessage, err := encHandle.Encrypt(data)
+    if err != nil {
+        return err
+    }
 
-	return os.WriteFile(secretsPath, pgpMessage.Bytes(), 0600)
+    return os.WriteFile(secretsPath, pgpMessage.Bytes(), 0600)
 }
 
 func (s *SetupCommand) readLine() string {
-	line, _ := s.reader.ReadString('\n')
-	return strings.TrimSpace(line)
+    line, _ := s.reader.ReadString('\n')
+    return strings.TrimSpace(line)
 }
 
 func (s *SetupCommand) readPassword() string {
-	if fd := int(os.Stdin.Fd()); term.IsTerminal(fd) {
-		b, err := term.ReadPassword(fd)
-		fmt.Println()
-		if err == nil {
-			return strings.TrimSpace(string(b))
-		}
-	}
-	return s.readLine()
+    if fd := int(os.Stdin.Fd()); term.IsTerminal(fd) {
+        b, err := term.ReadPassword(fd)
+        fmt.Println()
+        if err == nil {
+            return strings.TrimSpace(string(b))
+        }
+    }
+    return s.readLine()
 }
 
 func (s *SetupCommand) askYesNo(question string) bool {
-	fmt.Printf("%s (y/N): ", question)
-	answer := s.readLine()
-	return strings.ToLower(answer) == "y" || strings.ToLower(answer) == "yes"
+    fmt.Printf("%s %s ", ui.Prompt(question), ui.Dim("(y/N)"))
+    answer := s.readLine()
+    lower := strings.ToLower(answer)
+    return lower == "y" || lower == "yes"
 }
 
 var (
-	setupCmd = &cobra.Command{
-		Use:   "setup",
-		Short: "Setup better-env",
-		Long:  "Setup better-env to start using it. This will create a GPG key and use it to create a secure store for your environment variables.",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			sc := NewSetupCommand()
-			return sc.Run()
-		},
-	}
+    setupCmd = &cobra.Command{
+        Use:   "setup",
+        Short: "Setup better-env",
+        Long:  "Setup better-env to start using it. This will create a GPG key and use it to create a secure store for your environment variables.",
+        RunE: func(cmd *cobra.Command, args []string) error {
+            sc := NewSetupCommand()
+            return sc.Run()
+        },
+    }
 )
 
 func init() {
-	rootCmd.AddCommand(setupCmd)
+    rootCmd.AddCommand(setupCmd)
 }
