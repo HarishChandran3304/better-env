@@ -1,11 +1,17 @@
-# better-env
+<p align="center">
+<img width="120" height="120" alt="image" src="https://github.com/user-attachments/assets/3427bf56-07a6-4472-9ea6-faca2109b01d" />
+</p>
 
-Encrypted secrets, zero plaintext, instant runtime loading.
+<h1 align="center"> better-env </h1>
+
+<p align="center">
+Encrypted Secrets • Zero Plaintext • Instant Runtime Loading
+</p>
 
 better-env is a simple, secure CLI tool to manage environment variables centrally on your machine using PGP encryption (via ProtonMail's gopenpgp). Keep your secrets out of repos and out of plaintext files, loading them into apps only at runtime. Never accidentally commit secrets again. `.better-env` files are fully commit-safe.
 
 ## Why better-env?
-- Global encrypted store for all your secrets (per user)
+- Global encrypted store for all your secrets
 - No plaintext .env files needed in projects
 - Easy per-project selection of which keys to load
 - Shell-friendly: start a subshell with secrets or run commands with injected secrets
