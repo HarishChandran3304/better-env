@@ -8,7 +8,7 @@ better-env is a simple, secure CLI tool to manage environment variables centrall
 - Global encrypted store for all your secrets (per user)
 - No plaintext .env files needed in projects
 - Easy per-project selection of which keys to load
-- Shell-friendly: start a subshell with secrets or run commands with injected env
+- Shell-friendly: start a subshell with secrets or run commands with injected secrets
 
 ## Quickstart
 ### Installation
