@@ -59,7 +59,7 @@ bnv run python3 main.py
 
 better-env officially supports Unix-like shells (macOS, Linux).
 
-> [!NOTE]
+> [!WARNING]
 > Windows support is experimental:
 > 
 > - `bnv run` works as expected.
