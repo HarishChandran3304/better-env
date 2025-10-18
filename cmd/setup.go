@@ -107,24 +107,16 @@ func (s *SetupCommand) Run() error {
 	fmt.Printf("Store location: %s\n", storePath)
 	fmt.Printf("Key fingerprint: %s\n", config.KeyFingerprint)
 	fmt.Println()
-	shell := os.Getenv("SHELL")
-	switch {
-	// zsh
-	case strings.HasSuffix(shell, "zsh"):
-		fmt.Println("Enter the following command to finish your setup:")
-		fmt.Println("echo 'bnv() { if [ \"$1\" = \"load\" ]; then eval \"$(command bnv load)\"; elif [ \"$1\" = \"unload\" ]; then eval \"$(command bnv unload)\"; else command bnv \"$@\"; fi }' >> ~/.zshrc && source ~/.zshrc")
-	// bash
-	case strings.HasSuffix(shell, "bash"):
-		fmt.Println("Enter the following command to finish your setup:")
-		fmt.Println("echo 'bnv() { if [ \"$1\" = \"load\" ]; then eval \"$(command bnv load)\"; elif [ \"$1\" = \"unload\" ]; then eval \"$(command bnv unload)\"; else command bnv \"$@\"; fi }' >> ~/.bashrc && source ~/.bashrc")
-	// other
-	default:
-		fmt.Println("Add the following to your shell's config file:")
-		fmt.Println(`bnv() { if [ "$1" = "load" ]; then eval "$(command bnv load)"; elif [ "$1" = "unload" ]; then eval "$(command bnv unload)"; else command bnv "$@"; fi }`)
-		return nil
-	}
-	fmt.Println()
-	fmt.Println("To learn how to use better-env check out the docs at https://better-env.dev/docs")
+    fmt.Println()
+    fmt.Println("You're all set!")
+    fmt.Println()
+    fmt.Println("Next steps:")
+    fmt.Println("  - Add secrets to your store: bnv add KEY")
+	fmt.Println("  - Navigate to your project and initialize better-env: bnv init")
+	fmt.Println("  - Add secrets to your project: bnv add KEY")
+	fmt.Println("  - Start a subshell with secrets: bnv shell")
+    fmt.Println()
+    fmt.Println("For more information, check out the documentation at https://better-env.dev/docs")
 
 	return nil
 }

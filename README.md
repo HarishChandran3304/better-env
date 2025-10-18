@@ -8,15 +8,22 @@ better-env is a simple, secure CLI tool to manage environment variables centrall
 - Global encrypted store for all your secrets (per user)
 - No plaintext .env files needed in projects
 - Easy per-project selection of which keys to load
-- Shell-friendly: export/unset to the parent shell, or run commands in an isolated child environment
+- Shell-friendly: start a subshell with secrets or run commands with injected env
 
 ## Quickstart
 ### Installation
 
-- Script (macOS/Linux):
+- macOS/Linux:
 ```bash
 curl -fsSL https://raw.githubusercontent.com/HarishChandran3304/better-env/main/scripts/install.sh | sh
 ```
+
+- Windows (PowerShell):
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -Command "iwr -useb https://raw.githubusercontent.com/HarishChandran3304/better-env/main/scripts/install.ps1 | iex"
+```
+> [!NOTE]
+> The Windows installer uses PowerShell to install, but after installation bnv can be run from any shell on your PATH.
 
 ### Setup
 
@@ -38,12 +45,26 @@ bnv store KEY
 cd /path/to/my/project
 bnv init
 bnv add KEY
-bnv load
+
+# Interactive shell (recommended)
+bnv shell
+# ... your commands here ...
+exit
+
+# One-off command
+bnv run python3 main.py
 ```
 
 ## Platforms supported
 
-better-env officially supports Unix-like shells (macOS, Linux). Windows is partially supported: all core commands work, but `load`/`unload` shell integration is POSIX-only and won’t affect PowerShell/cmd environments.
+better-env officially supports Unix-like shells (macOS, Linux).
+
+> [!NOTE]
+> Windows support is experimental:
+> 
+> - `bnv run` works as expected.
+> - `bnv shell` attempts to launch `pwsh`, then `powershell`, then `cmd.exe` for an interactive session with secrets. Shell startup semantics differ from POSIX shells, so profile scripts > may not run the same.
+> - For the best experience on Windows, consider WSL or Git Bash/MSYS2.
 
 ## Learn More
 

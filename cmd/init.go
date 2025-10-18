@@ -68,9 +68,9 @@ var initCmd = &cobra.Command{
 		fmt.Println("Created .better-env configuration file.")
 		fmt.Printf("Linked to store: %s\n", storePath)
 		fmt.Println()
-		fmt.Println("Next steps:")
-		fmt.Println("  1. Add secrets to your store: bnv add KEY")
-		fmt.Println("  2. Load secrets in this project: bnv load")
+		// fmt.Println("Next steps:")
+		// fmt.Println("  1. Add secrets to your store: bnv add KEY")
+		// fmt.Println("  2. Load secrets in this project: bnv load")
 		return nil
 	},
 }
