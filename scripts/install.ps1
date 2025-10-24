@@ -34,7 +34,6 @@ function Get-Checksum($ChecksumsPath, [string]$AssetName) {
   return ($line.ToString().Trim() -split '\s+')[0]
 }
 
-Write-Host 'Fetching latest release metadata…'
 $release = Get-LatestTag
 $tag = $release.tag_name
 $version = $tag.TrimStart('v')
@@ -53,14 +52,12 @@ try {
   $archivePath = Join-Path $tmp.FullName $assetName
   $checksumsPath = if ($checksums) { Join-Path $tmp.FullName 'checksums.txt' } else { $null }
 
-  Write-Host "Downloading $assetName…"
   Invoke-WebRequest -Uri $asset.browser_download_url -OutFile $archivePath -UseBasicParsing
   if ($checksums -ne $null) {
     Invoke-WebRequest -Uri $checksums.browser_download_url -OutFile $checksumsPath -UseBasicParsing
   }
 
   if ($checksumsPath -and (Test-Path $checksumsPath)) {
-    Write-Host 'Verifying checksum…'
     $expected = Get-Checksum -ChecksumsPath $checksumsPath -AssetName $assetName
     if ($expected) {
       $actual = (Get-FileHash -Algorithm SHA256 -Path $archivePath).Hash.ToLower()
@@ -72,7 +69,6 @@ try {
     }
   }
 
-  Write-Host 'Extracting…'
   $extractDir = Join-Path $tmp.FullName 'out'
   New-Item -ItemType Directory -Path $extractDir -Force | Out-Null
   Expand-Archive -Path $archivePath -DestinationPath $extractDir -Force
@@ -83,15 +79,14 @@ try {
   $target = Join-Path $InstallDir "${Bin}.exe"
   Move-Item -Force -Path $exe.FullName -Destination $target
 
-  Write-Host "✓ Successfully installed: $target"
+  Write-Host "Installed: $target"
 
   # Ensure install dir is on the user PATH
   $userPath = [Environment]::GetEnvironmentVariable('Path', 'User')
   if (-not $userPath) { $userPath = '' }
   if (-not ($userPath -split ';' | Where-Object { $_ -eq $InstallDir })) {
     [Environment]::SetEnvironmentVariable('Path', ($userPath.TrimEnd(';') + ';' + $InstallDir), 'User')
-    Write-Host "Added to user PATH: $InstallDir"
-    Write-Host 'Note: Restart your terminal or run: $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "User")'
+    Write-Host "Added to PATH: $InstallDir"
   }
 
   # Print version
