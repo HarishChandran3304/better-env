@@ -74,6 +74,10 @@ better-env officially supports Unix-like shells (macOS, Linux).
 > - `bnv shell` attempts to launch `pwsh`, then `powershell`, then `cmd.exe` for an interactive session with secrets. Shell startup semantics differ from POSIX shells, so profile scripts > may not run the same.
 > - For the best experience on Windows, consider WSL or Git Bash/MSYS2.
 
+## Contributing
+
+Contributions welcome. See [CONTRIBUTING.md](./CONTRIBUTING.md).
+
 ## Learn More
 
 See the full documentation [here](https://better-env.dev/docs)
