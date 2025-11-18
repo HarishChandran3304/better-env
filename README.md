@@ -10,7 +10,7 @@
 Encrypted Secrets • Zero Plaintext • Instant Runtime Loading • 100% Commit Safe
 </p>
 
-better-env is a simple, secure CLI tool to manage environment variables centrally on your machine using PGP encryption (via ProtonMail's gopenpgp). Keep your secrets out of repos and out of plaintext files, loading them into apps only at runtime. Never accidentally commit secrets again. `.better-env` files are fully commit-safe.
+better-env is a simple, secure CLI tool to manage environment variables centrally on your machine using PGP encryption. Keep your secrets out of repos and out of plaintext files, loading them into apps only at runtime. Never accidentally commit secrets again. `.better-env` files are fully commit-safe.
 
 ## Why better-env?
 - Global encrypted store for all your secrets
