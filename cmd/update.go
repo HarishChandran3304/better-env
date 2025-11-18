@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"bufio"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -79,14 +78,13 @@ func (u *UpdateCommand) Run() error {
 		return fmt.Errorf("key '%s' not found in global store. Use 'bnv set' to create a new key", u.key)
 	}
 
-	// 7. Prompt for new value
+	// 7. Prompt for new value (hidden input)
 	fmt.Print("Enter new value: ")
-	reader := bufio.NewReader(os.Stdin)
-	value, err := reader.ReadString('\n')
+	valueBytes, err := beinternal.ReadPasswordFromStdin()
 	if err != nil {
 		return fmt.Errorf("failed to read value: %w", err)
 	}
-	value = strings.TrimSpace(value)
+	value := strings.TrimSpace(string(valueBytes))
 
 	// 8. Update the key-value pair
 	secrets[u.key] = value

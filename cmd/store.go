@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"bufio"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -126,14 +125,13 @@ var (
 		Long:  "Add or update a secret in the encrypted global store. The value will be read interactively. You will be prompted for your passphrase.",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// Prompt for value
+			// Prompt for value (hidden input)
 			fmt.Print("Enter value: ")
-			reader := bufio.NewReader(os.Stdin)
-			value, err := reader.ReadString('\n')
+			valueBytes, err := beinternal.ReadPasswordFromStdin()
 			if err != nil {
 				return fmt.Errorf("failed to read value: %w", err)
 			}
-			value = strings.TrimSpace(value)
+			value := strings.TrimSpace(string(valueBytes))
 
 			sc := NewStoreCommand(args[0], value)
 			return sc.Run()

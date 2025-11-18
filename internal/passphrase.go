@@ -11,9 +11,9 @@ import (
 	"golang.org/x/term"
 )
 
-// readPasswordFromStdin reads a password securely when attached to a TTY,
+// ReadPasswordFromStdin reads a password securely when attached to a TTY,
 // and falls back to a normal line read otherwise. A trailing newline is trimmed.
-func readPasswordFromStdin() ([]byte, error) {
+func ReadPasswordFromStdin() ([]byte, error) {
 	if fd := int(os.Stdin.Fd()); term.IsTerminal(fd) {
 		b, err := term.ReadPassword(fd)
 		fmt.Println()
@@ -42,7 +42,7 @@ func PromptAndUnlockPrivateKey(privateKeyArmored []byte, promptToStderr bool, ma
 
 	for attempt := 1; attempt <= maxAttempts; attempt++ {
 		fmt.Fprint(writer, "Enter passphrase: ")
-		passphrase, err := readPasswordFromStdin()
+		passphrase, err := ReadPasswordFromStdin()
 		if err != nil {
 			return nil, fmt.Errorf("failed to read passphrase: %w", err)
 		}
