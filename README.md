@@ -4,7 +4,7 @@
 
 <h1 align="center"> better-env </h1>
 
-<h3 align="center"> A better way to manage secrets - because screw .env </h3>
+<h3 align="center"> A Secure, Developer-Friendly Alternative to .env </h3>
 
 <p align="center">
 Encrypted Secrets • Zero Plaintext • Instant Runtime Loading • 100% Commit Safe
