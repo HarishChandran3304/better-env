@@ -1,5 +1,5 @@
 <p align="center">
-<img width="120" height="120" alt="image" src="https://github.com/user-attachments/assets/3427bf56-07a6-4472-9ea6-faca2109b01d" />
+<img width="3600" height="2025" alt="stage-1763854172429" src="https://github.com/user-attachments/assets/4fca0e2a-8a4e-46ff-9042-0787d48b69e7" />
 </p>
 
 <h1 align="center"> better-env </h1>
@@ -19,6 +19,7 @@ better-env is a simple, secure CLI tool to manage environment variables centrall
 - Shell-friendly: start a subshell with secrets or run commands with injected secrets
 
 ## Quickstart
+
 ### Installation
 
 - macOS/Linux:
