@@ -15,10 +15,6 @@ var (
 	initForce bool
 )
 
-type ProjectConfig struct {
-	Keys []string `json:"keys,omitempty"` // Optional: specific keys this project uses
-}
-
 var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Create a .better-env file in the current project",
